@@ -219,7 +219,7 @@ local function attachTag(character, tagOwner)
         handleLabel.Position = UDim2.new(0, 54, 0, handleLabelBaseY + o)
     end)
 
-    -- Click to teleport (works on both the pill frame and name label)
+    -- Click to teleport  use ImageButton overlay (BillboardGui Frames don't fire clicks reliably)
     local function doTeleport()
         if tagOwner and tagOwner.Character then
             local tr = tagOwner.Character:FindFirstChild("HumanoidRootPart")
@@ -229,21 +229,14 @@ local function attachTag(character, tagOwner)
             end
         end
     end
-    tag.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            doTeleport()
-        end
-    end)
-    nameLabel.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            doTeleport()
-        end
-    end)
-    handleLabel.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            doTeleport()
-        end
-    end)
+    local clickBtn = Instance.new("ImageButton")
+    clickBtn.Size = UDim2.new(1, 0, 1, 0)
+    clickBtn.Position = UDim2.new(0, 0, 0, 0)
+    clickBtn.BackgroundTransparency = 1
+    clickBtn.Image = ""
+    clickBtn.ZIndex = 10
+    clickBtn.Parent = billboard
+    clickBtn.MouseButton1Click:Connect(doTeleport)
 
     -- Glitch effects
     local function startGlitch()
