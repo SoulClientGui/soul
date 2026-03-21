@@ -229,14 +229,7 @@ local function attachTag(character, tagOwner)
             end
         end
     end
-    local clickBtn = Instance.new("ImageButton")
-    clickBtn.Size = UDim2.new(1, 0, 1, 0)
-    clickBtn.Position = UDim2.new(0, 0, 0, 0)
-    clickBtn.BackgroundTransparency = 1
-    clickBtn.Image = ""
-    clickBtn.ZIndex = 10
-    clickBtn.Parent = billboard
-    clickBtn.MouseButton1Click:Connect(doTeleport)
+
 
     -- Glitch effects
     local function startGlitch()
@@ -423,6 +416,49 @@ Players.PlayerRemoving:Connect(function(p)
         if h then
             local bb = h:FindFirstChild("SoulBillboard")
             if bb then bb:Destroy() end
+        end
+    end
+end)
+
+-- ===================== TAG TELEPORT SYSTEM =====================
+-- Press E while looking at / near a tagged player to teleport to them
+-- Also adds a highlight ring when cursor is close to a tagged player
+local taggedPlayers = {}  -- populated by watchPlayer / plantMarker
+
+local function getNearestTaggedToMouse()
+    local mouse = player:GetMouse()
+    local closest, closestDist = nil, 180  -- pixel threshold
+    local GuiService = game:GetService("GuiService")
+    local inset = GuiService:GetGuiInset()
+    local mousePos = Vector2.new(mouse.X, mouse.Y + inset.Y)
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if not CUSTOM_TAGS[tostring(p.UserId)] then continue end
+        if not p.Character then continue end
+        local head = p.Character:FindFirstChild("Head")
+        if not head then continue end
+        local screenPos, onScreen = camera:WorldToViewportPoint(head.Position)
+        if not onScreen then continue end
+        local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+        if dist < closestDist then
+            closestDist = dist
+            closest = p
+        end
+    end
+    return closest
+end
+
+-- E key teleport to nearest tagged player
+UserInputService.InputBegan:Connect(function(inp, gp)
+    if gp then return end
+    if inp.KeyCode == Enum.KeyCode.E then
+        local target = getNearestTaggedToMouse()
+        if target and target.Character then
+            local tr = target.Character:FindFirstChild("HumanoidRootPart")
+            local mr = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if tr and mr then
+                mr.CFrame = tr.CFrame * CFrame.new(0, 0, -3)
+            end
         end
     end
 end)
