@@ -219,14 +219,29 @@ local function attachTag(character, tagOwner)
         handleLabel.Position = UDim2.new(0, 54, 0, handleLabelBaseY + o)
     end)
 
-    -- Click to teleport
-    tag.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if tagOwner and tagOwner ~= player and tagOwner.Character then
-                local tr = tagOwner.Character:FindFirstChild("HumanoidRootPart")
-                local mr = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                if tr and mr then mr.CFrame = tr.CFrame * CFrame.new(0, 0, -3) end
+    -- Click to teleport (works on both the pill frame and name label)
+    local function doTeleport()
+        if tagOwner and tagOwner.Character then
+            local tr = tagOwner.Character:FindFirstChild("HumanoidRootPart")
+            local mr = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+            if tr and mr then
+                mr.CFrame = tr.CFrame * CFrame.new(0, 0, -3)
             end
+        end
+    end
+    tag.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            doTeleport()
+        end
+    end)
+    nameLabel.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            doTeleport()
+        end
+    end)
+    handleLabel.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            doTeleport()
         end
     end)
 
