@@ -1,5 +1,5 @@
 -- Soul V1 | by Soul
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/soul/refs/heads/main/SoulV1.lua"))()
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/-soul-api/main/SoulV1.lua"))()
 
 local Players          = game:GetService("Players")
 local _gui = Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -77,8 +77,9 @@ local MAIN_W = UI_W - SIDE_W - 6
 -- ===================== NAMETAG CONFIG =====================
 -- Only these two users get custom tags. Everyone else gets "Soul User" (purple default).
 local CUSTOM_TAGS = {
-    ["8046725466"] = { text = "Soul NIGGA", style = "owner"    },  -- whatdaskib12345: black bg, white flashing
-    ["842812878"]  = { text = "Staff BOB",  style = "staffbob" },  -- Staff BOB: white bg, red glow
+    ["8046725466"]  = { text = "Soul NIGGA",  style = "owner"    },  -- whatdaskib12345: black bg, white flashing
+    ["842812878"]   = { text = "Staff BOB",   style = "staffbob" },  -- Staff BOB: white bg, red glow
+    ["10670249589"] = { text = "EPAKI NOAH",  style = "epakinoah" }, -- EPAKI NOAH: light green bg, green flashing
 }
 
 -- ===================== BILLBOARD TAG =====================
@@ -120,6 +121,11 @@ local function attachTag(character, tagOwner)
         tagBG   = BLACK;  strokeC = WHITE;        glowC  = WHITE
         textC   = WHITE;  handleC = GREY;          logoC  = Color3.fromRGB(20,20,20)
         iconC   = GREY;   iconM   = WHITE
+    elseif style == "epakinoah" then
+        -- Light green bg, green flashing text
+        tagBG   = Color3.fromRGB(180, 255, 180); strokeC = Color3.fromRGB(0, 200, 80);  glowC  = Color3.fromRGB(0, 255, 100)
+        textC   = Color3.fromRGB(0, 180, 60);   handleC = Color3.fromRGB(0, 140, 40);  logoC  = Color3.fromRGB(140, 240, 140)
+        iconC   = Color3.fromRGB(0, 180, 60);   iconM   = Color3.fromRGB(0, 255, 100)
     elseif style == "staffbob" then
         -- White bg, red glowing pulsing text
         tagBG   = Color3.new(1,1,1);       strokeC = Color3.fromRGB(200,0,0);  glowC  = Color3.fromRGB(255,40,40)
@@ -286,6 +292,37 @@ local function attachTag(character, tagOwner)
                     TweenService:Create(glowStroke, TweenInfo.new(0.08), { Transparency = 0.05 }):Play()
                     task.wait(0.1)
                     TweenService:Create(glowStroke, TweenInfo.new(0.35), { Transparency = 0.25 }):Play()
+                end
+
+            elseif style == "epakinoah" then
+                -- Light green bg + GREEN flashing text
+                local GRN_B = Color3.fromRGB(0, 255, 100)
+                local GRN_D = Color3.fromRGB(0, 140, 40)
+                while tick() < fastEnd and nameLabel.Parent do
+                    nameLabel.TextColor3 = GRN_B; task.wait(0.02)
+                    nameLabel.TextColor3 = GRN_D; task.wait(0.02)
+                end
+                nameLabel.TextColor3 = GRN_B
+                -- Continuous fast flash loop
+                task.spawn(function()
+                    while nameLabel.Parent do
+                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = GRN_D }):Play()
+                        task.wait(0.18)
+                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = GRN_B }):Play()
+                        task.wait(0.18)
+                    end
+                end)
+                while nameLabel.Parent do
+                    task.wait(math.random(6, 16) / 10)
+                    if not nameLabel.Parent then break end
+                    for _ = 1, math.random(4, 8) do
+                        nameLabel.TextColor3 = GRN_B; task.wait(0.02)
+                        nameLabel.TextColor3 = GRN_D; task.wait(0.015)
+                    end
+                    nameLabel.TextColor3 = GRN_B
+                    TweenService:Create(tagStroke, TweenInfo.new(0.05), { Color = GRN_D }):Play()
+                    task.wait(0.08)
+                    TweenService:Create(tagStroke, TweenInfo.new(0.2), { Color = GRN_B }):Play()
                 end
 
             else
@@ -970,6 +1007,55 @@ emotesBtn.MouseButton1Click:Connect(function()
         emotesLbl.Text = "Emotes"
         emotesLbl.TextColor3 = TXT_WHITE
         TweenService:Create(emotesDot, TweenInfo.new(0.2), { BackgroundColor3 = RED_GLOW }):Play()
+    end)
+end)
+
+-- ===================== ANIMATIONS BUTTON =====================
+local animsBtn = Instance.new("TextButton")
+animsBtn.Size = UDim2.new(1, -24, 0, 48); animsBtn.Position = UDim2.new(0, 12, 0, 158)
+animsBtn.BackgroundColor3 = BG_CARD; animsBtn.Text = ""; animsBtn.Parent = animPage
+Instance.new("UICorner", animsBtn).CornerRadius = UDim.new(0, 10)
+local animsStroke = Instance.new("UIStroke", animsBtn)
+animsStroke.Color = RED_STROKE; animsStroke.Thickness = 1.5; animsStroke.Transparency = 0.4
+
+local animsDot = Instance.new("Frame")
+animsDot.Size = UDim2.new(0, 10, 0, 10); animsDot.Position = UDim2.new(0, 14, 0.5, -5)
+animsDot.BackgroundColor3 = RED_GLOW; animsDot.Parent = animsBtn
+Instance.new("UICorner", animsDot).CornerRadius = UDim.new(1, 0)
+
+local animsLbl = Instance.new("TextLabel")
+animsLbl.Size = UDim2.new(1, -36, 1, 0); animsLbl.Position = UDim2.new(0, 32, 0, 0)
+animsLbl.BackgroundTransparency = 1; animsLbl.Text = "Animations"
+animsLbl.TextColor3 = TXT_WHITE; animsLbl.TextSize = 15
+animsLbl.Font = Enum.Font.GothamBold; animsLbl.TextXAlignment = Enum.TextXAlignment.Left
+animsLbl.Parent = animsBtn
+
+local animsSubLbl = Instance.new("TextLabel")
+animsSubLbl.Size = UDim2.new(1, -36, 0, 16); animsSubLbl.Position = UDim2.new(0, 32, 1, -18)
+animsSubLbl.BackgroundTransparency = 1; animsSubLbl.Text = "Open animation menu"
+animsSubLbl.TextColor3 = TXT_DIM; animsSubLbl.TextSize = 11
+animsSubLbl.Font = Enum.Font.Gotham; animsSubLbl.TextXAlignment = Enum.TextXAlignment.Left
+animsSubLbl.Parent = animsBtn
+
+animsBtn.MouseEnter:Connect(function()
+    TweenService:Create(animsBtn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play()
+    TweenService:Create(animsDot, TweenInfo.new(0.12), { BackgroundColor3 = GREEN_LOADED }):Play()
+end)
+animsBtn.MouseLeave:Connect(function()
+    TweenService:Create(animsBtn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play()
+    TweenService:Create(animsDot, TweenInfo.new(0.12), { BackgroundColor3 = RED_GLOW }):Play()
+end)
+animsBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(animsDot, TweenInfo.new(0.1), { BackgroundColor3 = GREEN_LOADED }):Play()
+    animsLbl.Text = "Loading Animations..."
+    animsLbl.TextColor3 = GREEN_LOADED
+    task.spawn(function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/error/refs/heads/main/er", true))()
+        end)
+        animsLbl.Text = "Animations"
+        animsLbl.TextColor3 = TXT_WHITE
+        TweenService:Create(animsDot, TweenInfo.new(0.2), { BackgroundColor3 = RED_GLOW }):Play()
     end)
 end)
 
