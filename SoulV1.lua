@@ -132,12 +132,12 @@ local function attachTag(character, tagOwner, customName)
     -- Per-style colours
     local tagBG, tagStrokeC, tagGlowC, tagTextC, tagHandleC, tagLogoC, tagIconC, tagIconM
     if style == "owner" then
-        tagBG       = WHITE
+        tagBG       = BLACK
         tagStrokeC  = WHITE
         tagGlowC    = WHITE
         tagTextC    = WHITE
-        tagHandleC  = Color3.fromRGB(200, 200, 200)
-        tagLogoC    = Color3.fromRGB(230, 230, 230)
+        tagHandleC  = Color3.fromRGB(180, 180, 180)
+        tagLogoC    = Color3.fromRGB(15, 15, 15)
         tagIconC    = Color3.fromRGB(180, 180, 180)
         tagIconM    = WHITE
     elseif style == "staffbob" then
