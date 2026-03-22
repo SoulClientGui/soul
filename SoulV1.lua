@@ -1,5 +1,5 @@
 -- Soul V1 | by Soul
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/-soul-api/main/SoulV1.lua"))()
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/soul/refs/heads/main/SoulV1.lua"))()
 
 local Players          = game:GetService("Players")
 local _gui = Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -77,9 +77,10 @@ local MAIN_W = UI_W - SIDE_W - 6
 -- ===================== NAMETAG CONFIG =====================
 -- Only these two users get custom tags. Everyone else gets "Soul User" (purple default).
 local CUSTOM_TAGS = {
-    ["8046725466"]  = { text = "Soul NIGGA",  style = "owner"    },  -- whatdaskib12345: black bg, white flashing
-    ["842812878"]   = { text = "Staff BOB",   style = "staffbob" },  -- Staff BOB: white bg, red glow
-    ["10670249589"] = { text = "EPAKI NOAH",  style = "epakinoah" }, -- EPAKI NOAH: light green bg, green flashing
+    ["8046725466"]  = { text = "Soul NIGGA",       style = "owner"    },  -- whatdaskib12345: black bg, white flashing
+    ["842812878"]   = { text = "Staff BOB",        style = "staffbob" },  -- Staff BOB: white bg, red glow
+    ["10670249589"] = { text = "EPAKI NOAH",       style = "epakinoah" }, -- EPAKI NOAH: light green bg, green flashing
+    ["7148067436"]  = { text = "Runic/EXT KILLERS", style = "extkillers" }, -- black bg, red flashing
 }
 
 -- ===================== BILLBOARD TAG =====================
@@ -126,6 +127,11 @@ local function attachTag(character, tagOwner)
         tagBG   = Color3.fromRGB(180, 255, 180); strokeC = Color3.fromRGB(0, 200, 80);  glowC  = Color3.fromRGB(0, 255, 100)
         textC   = Color3.fromRGB(0, 180, 60);   handleC = Color3.fromRGB(0, 140, 40);  logoC  = Color3.fromRGB(140, 240, 140)
         iconC   = Color3.fromRGB(0, 180, 60);   iconM   = Color3.fromRGB(0, 255, 100)
+    elseif style == "extkillers" then
+        -- Black bg, red flashing text
+        tagBG   = BLACK;                         strokeC = Color3.fromRGB(220, 0, 0);   glowC  = Color3.fromRGB(255, 40, 40)
+        textC   = Color3.fromRGB(255, 30, 30);  handleC = Color3.fromRGB(180, 0, 0);   logoC  = Color3.fromRGB(20, 20, 20)
+        iconC   = Color3.fromRGB(200, 0, 0);    iconM   = Color3.fromRGB(255, 80, 80)
     elseif style == "staffbob" then
         -- White bg, red glowing pulsing text
         tagBG   = Color3.new(1,1,1);       strokeC = Color3.fromRGB(200,0,0);  glowC  = Color3.fromRGB(255,40,40)
@@ -266,33 +272,47 @@ local function attachTag(character, tagOwner)
                 end
 
             elseif style == "staffbob" then
-                -- White bg + RED glowing pulse
-                local RED_B = Color3.fromRGB(255, 40, 40)
-                local RED_D = Color3.fromRGB(180, 0, 0)
+                -- White bg + RED glowing glitch (pulse + random hard flicker)
+                local SB_BRIGHT = Color3.fromRGB(255, 20, 20)
+                local SB_DIM    = Color3.fromRGB(160, 0, 0)
+                local SB_OFF    = Color3.fromRGB(80,  0, 0)
+                -- Initial fast burst
                 while tick() < fastEnd and nameLabel.Parent do
-                    nameLabel.TextColor3 = RED_B; task.wait(0.03)
-                    nameLabel.TextColor3 = RED_D; task.wait(0.03)
+                    nameLabel.TextColor3 = SB_BRIGHT; task.wait(0.025)
+                    nameLabel.TextColor3 = SB_DIM;    task.wait(0.025)
                 end
-                nameLabel.TextColor3 = RED_B
+                nameLabel.TextColor3 = SB_BRIGHT
+                -- Continuous slow glow pulse
                 task.spawn(function()
                     while nameLabel.Parent do
-                        TweenService:Create(nameLabel, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = RED_D }):Play()
-                        task.wait(0.8)
-                        TweenService:Create(nameLabel, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = RED_B }):Play()
-                        task.wait(0.8)
+                        TweenService:Create(nameLabel, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = SB_DIM }):Play()
+                        task.wait(0.6)
+                        TweenService:Create(nameLabel, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = SB_BRIGHT }):Play()
+                        task.wait(0.6)
                     end
                 end)
-                while nameLabel.Parent do
-                    task.wait(math.random(20, 50) / 10)
-                    if not nameLabel.Parent then break end
-                    for _ = 1, math.random(2, 4) do
-                        nameLabel.TextColor3 = RED_B; task.wait(0.03)
-                        nameLabel.TextColor3 = RED_D; task.wait(0.025)
+                -- Glow ring pulse
+                task.spawn(function()
+                    while nameLabel.Parent do
+                        TweenService:Create(glowStroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.1 }):Play()
+                        task.wait(0.5)
+                        TweenService:Create(glowStroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.5 }):Play()
+                        task.wait(0.5)
                     end
-                    nameLabel.TextColor3 = RED_B
-                    TweenService:Create(glowStroke, TweenInfo.new(0.08), { Transparency = 0.05 }):Play()
-                    task.wait(0.1)
-                    TweenService:Create(glowStroke, TweenInfo.new(0.35), { Transparency = 0.25 }):Play()
+                end)
+                -- Random hard glitch bursts
+                while nameLabel.Parent do
+                    task.wait(math.random(15, 40) / 10)
+                    if not nameLabel.Parent then break end
+                    for _ = 1, math.random(3, 7) do
+                        nameLabel.TextColor3 = SB_BRIGHT; task.wait(0.02)
+                        nameLabel.TextColor3 = SB_OFF;    task.wait(0.015)
+                        nameLabel.TextColor3 = SB_DIM;    task.wait(0.02)
+                    end
+                    nameLabel.TextColor3 = SB_BRIGHT
+                    TweenService:Create(tagStroke, TweenInfo.new(0.04), { Color = SB_OFF }):Play()
+                    task.wait(0.06)
+                    TweenService:Create(tagStroke, TweenInfo.new(0.2),  { Color = Color3.fromRGB(220, 0, 0) }):Play()
                 end
 
             elseif style == "epakinoah" then
@@ -324,6 +344,36 @@ local function attachTag(character, tagOwner)
                     TweenService:Create(tagStroke, TweenInfo.new(0.05), { Color = GRN_D }):Play()
                     task.wait(0.08)
                     TweenService:Create(tagStroke, TweenInfo.new(0.2), { Color = GRN_B }):Play()
+                end
+
+            elseif style == "extkillers" then
+                -- Black bg + RED fast flashing text
+                local EXT_B = Color3.fromRGB(255, 30, 30)
+                local EXT_D = Color3.fromRGB(140, 0, 0)
+                while tick() < fastEnd and nameLabel.Parent do
+                    nameLabel.TextColor3 = EXT_B; task.wait(0.02)
+                    nameLabel.TextColor3 = EXT_D; task.wait(0.02)
+                end
+                nameLabel.TextColor3 = EXT_B
+                task.spawn(function()
+                    while nameLabel.Parent do
+                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = EXT_D }):Play()
+                        task.wait(0.18)
+                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = EXT_B }):Play()
+                        task.wait(0.18)
+                    end
+                end)
+                while nameLabel.Parent do
+                    task.wait(math.random(6, 16) / 10)
+                    if not nameLabel.Parent then break end
+                    for _ = 1, math.random(4, 9) do
+                        nameLabel.TextColor3 = EXT_B; task.wait(0.015)
+                        nameLabel.TextColor3 = EXT_D; task.wait(0.015)
+                    end
+                    nameLabel.TextColor3 = EXT_B
+                    TweenService:Create(tagStroke, TweenInfo.new(0.04), { Color = EXT_D }):Play()
+                    task.wait(0.06)
+                    TweenService:Create(tagStroke, TweenInfo.new(0.15), { Color = EXT_B }):Play()
                 end
 
             else
@@ -2269,7 +2319,30 @@ local actions = {
     ["speed"]       = function() cmdActive["speed"]=not cmdActive["speed"]; local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if cmdActive["speed"] then if h then h.WalkSpeed=80 end; showNotif("Speed Boost",true) else if h then h.WalkSpeed=16 end; showNotif("Speed Boost",false) end end,
     ["noclip"]      = function() cmdActive["noclip"]=not cmdActive["noclip"]; if cmdActive["noclip"] then RunService.Stepped:Connect(function() if not cmdActive["noclip"] then return end; local c=player.Character; if c then for _,p in pairs(c:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end end end); showNotif("No Clip",true) else showNotif("No Clip",false) end end,
     ["zoom"]        = function() cmdActive["zoom"]=not cmdActive["zoom"]; if cmdActive["zoom"] then camera.FieldOfView=90; showNotif("Infinite Zoom",true) else camera.FieldOfView=70; showNotif("Infinite Zoom",false) end end,
-    ["teleport"]    = function() cmdActive["teleport"]=not cmdActive["teleport"]; showNotif("Click Teleport [F]",cmdActive["teleport"]) end,
+    ["teleport"]    = function()
+        cmdActive["teleport"]=not cmdActive["teleport"]
+        showNotif("Click Teleport [F]", cmdActive["teleport"])
+        if cmdActive["teleport"] then
+            local mouse = player:GetMouse()
+            local tpConn
+            tpConn = UserInputService.InputBegan:Connect(function(inp, gp)
+                if not cmdActive["teleport"] then tpConn:Disconnect(); return end
+                if gp then return end
+                if inp.KeyCode == Enum.KeyCode.F then
+                    local myRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                    if not myRoot then return end
+                    local unitRay = camera:ScreenPointToRay(mouse.X, mouse.Y)
+                    local rayParams = RaycastParams.new()
+                    rayParams.FilterDescendantsInstances = { player.Character }
+                    rayParams.FilterType = Enum.RaycastFilterType.Exclude
+                    local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000, rayParams)
+                    if result then
+                        myRoot.CFrame = CFrame.new(result.Position + Vector3.new(0, 3, 0))
+                    end
+                end
+            end)
+        end
+    end,
     ["afk"]         = function() cmdActive["afk"]=not cmdActive["afk"]; if cmdActive["afk"] then local vu=game:GetService("VirtualUser"); player.Idled:Connect(function() if cmdActive["afk"] then vu:Button2Down(Vector2.new(0,0),camera.CFrame); task.wait(0.1); vu:Button2Up(Vector2.new(0,0),camera.CFrame) end end); showNotif("Anti-AFK",true) else showNotif("Anti-AFK",false) end end,
     ["infijump"]    = function() cmdActive["infijump"]=not cmdActive["infijump"]; if cmdActive["infijump"] then UserInputService.JumpRequest:Connect(function() if not cmdActive["infijump"] then return end; local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end end); showNotif("Infinite Jump",true) else showNotif("Infinite Jump",false) end end,
     ["fullbright"]  = function() cmdActive["fullbright"]=not cmdActive["fullbright"]; local l=game:GetService("Lighting"); if cmdActive["fullbright"] then l.Brightness=10; l.ClockTime=14; l.FogEnd=100000; l.GlobalShadows=false; showNotif("Full Bright",true) else l.Brightness=1; l.GlobalShadows=true; showNotif("Full Bright",false) end end,
