@@ -1,5 +1,5 @@
 -- Soul V1 | by Soul
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/soul/refs/heads/main/SoulV1.lua"))()
+-- loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/-soul-api/main/SoulV1.lua"))()
 
 local Players          = game:GetService("Players")
 local _gui = Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -133,9 +133,9 @@ local function attachTag(character, tagOwner)
         textC   = Color3.fromRGB(255, 30, 30);  handleC = Color3.fromRGB(180, 0, 0);   logoC  = Color3.fromRGB(20, 20, 20)
         iconC   = Color3.fromRGB(200, 0, 0);    iconM   = Color3.fromRGB(255, 80, 80)
     elseif style == "staffbob" then
-        -- White bg, red glowing pulsing text
-        tagBG   = Color3.new(1,1,1);       strokeC = Color3.fromRGB(200,0,0);  glowC  = Color3.fromRGB(255,40,40)
-        textC   = Color3.fromRGB(220,0,0); handleC = Color3.fromRGB(180,0,0);  logoC  = Color3.fromRGB(240,240,240)
+        -- Black bg, red text, red outline
+        tagBG   = BLACK;                   strokeC = Color3.fromRGB(220,0,0);  glowC  = Color3.fromRGB(255,40,40)
+        textC   = Color3.fromRGB(220,0,0); handleC = Color3.fromRGB(180,0,0);  logoC  = Color3.fromRGB(20,20,20)
         iconC   = Color3.fromRGB(200,0,0); iconM   = Color3.fromRGB(255,80,80)
     else
         tagBG   = PURPLE_BG;    strokeC = PURPLE_BRIGHT; glowC  = PURPLE_GLOW
