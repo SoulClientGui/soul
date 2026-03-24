@@ -1,24 +1,16 @@
--- Soul V1 | by Soul
--- loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/-soul-api/main/SoulV1.lua"))()
+-- Soul V1 | Bloodshot Red | Onyx-style Layout
+-- Mutual tag detection via BillboardGui marker (replicates natively to all clients)
 
-local Players          = game:GetService("Players")
-local _gui = Players.LocalPlayer:WaitForChild("PlayerGui")
-local function _showErr(msg)
-    local sg = Instance.new("ScreenGui"); sg.Name="SoulErr"; sg.ResetOnSpawn=false; sg.ZIndexBehavior=Enum.ZIndexBehavior.Sibling; sg.DisplayOrder=9999; sg.Parent=_gui
-    local f = Instance.new("Frame"); f.Size=UDim2.new(1,0,0,80); f.Position=UDim2.new(0,0,0,0); f.BackgroundColor3=Color3.fromRGB(180,0,0); f.BorderSizePixel=0; f.Parent=sg
-    local t = Instance.new("TextLabel"); t.Size=UDim2.new(1,-10,1,0); t.Position=UDim2.new(0,5,0,0); t.BackgroundTransparency=1; t.Text="[Soul V1 ERROR] "..tostring(msg); t.TextColor3=Color3.new(1,1,1); t.TextSize=13; t.Font=Enum.Font.GothamBold; t.TextWrapped=true; t.TextXAlignment=Enum.TextXAlignment.Left; t.Parent=f
-end
-local _ok, _err = pcall(function()
+local Players        = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TweenService     = game:GetService("TweenService")
-local RunService       = game:GetService("RunService")
-local SoundService     = game:GetService("SoundService")
-local Workspace        = game:GetService("Workspace")
+local TweenService   = game:GetService("TweenService")
+local RunService     = game:GetService("RunService")
+local SoundService   = game:GetService("SoundService")
+local Workspace      = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local camera = Workspace.CurrentCamera
 local gui    = player:WaitForChild("PlayerGui")
-
 
 -- ===================== CAMERA =====================
 local viewConnection = nil
@@ -39,6 +31,29 @@ local function stopViewing()
     camera.CameraType = Enum.CameraType.Custom
 end
 
+-- ===================== BLOODSHOT RED PALETTE =====================
+local BG_DARKEST  = Color3.fromRGB(28,  0,  0)
+local BG_DARK     = Color3.fromRGB(45,  0,  0)
+local BG_MID      = Color3.fromRGB(60,  2,  2)
+local BG_CARD     = Color3.fromRGB(80,  4,  4)
+local BG_NAVBAR   = Color3.fromRGB(22,  0,  0)
+local RED_VIVID   = Color3.fromRGB(200,  0,  0)
+local RED_BRIGHT  = Color3.fromRGB(230, 20, 20)
+local RED_GLOW    = Color3.fromRGB(255, 40, 40)
+local RED_STROKE  = Color3.fromRGB(160,  8,  8)
+local TXT_WHITE   = Color3.new(1, 1, 1)
+local TXT_MAIN    = Color3.fromRGB(255, 200, 200)
+local TXT_DIM     = Color3.fromRGB(160,  70,  70)
+local TXT_LABEL   = Color3.fromRGB(220,  50,  50)
+local GREEN_LOADED = Color3.fromRGB(80, 255, 120)
+
+-- Dimensions
+local UI_W   = 760
+local UI_H   = 480
+local NAV_H  = 38
+local SIDE_W = 160
+local MAIN_W = UI_W - SIDE_W - 6
+
 -- ===================== GUI ROOT =====================
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name            = "SoulV1"
@@ -52,49 +67,16 @@ openSound.SoundId = "rbxassetid://6026984224"
 openSound.Volume  = 0.6
 openSound.Parent  = SoundService
 
--- ===================== BLOODSHOT RED PALETTE =====================
-local BG_DARKEST  = Color3.fromRGB(28,  0,  0)
-local BG_DARK     = Color3.fromRGB(45,  0,  0)
-local BG_MID      = Color3.fromRGB(60,  2,  2)
-local BG_CARD     = Color3.fromRGB(80,  4,  4)
-local BG_NAVBAR   = Color3.fromRGB(22,  0,  0)
-local RED_VIVID   = Color3.fromRGB(200,  0,  0)
-local RED_BRIGHT  = Color3.fromRGB(230, 20, 20)
-local RED_GLOW    = Color3.fromRGB(255, 40, 40)
-local RED_STROKE  = Color3.fromRGB(160,  8,  8)
-local RED_ACCENT  = Color3.fromRGB(180, 10, 10)
-local TXT_WHITE   = Color3.new(1, 1, 1)
-local TXT_MAIN    = Color3.fromRGB(255, 200, 200)
-local TXT_DIM     = Color3.fromRGB(160,  70,  70)
-local TXT_LABEL   = Color3.fromRGB(220,  50,  50)
-local GREEN_LOADED = Color3.fromRGB(80, 255, 120)
-local UI_W   = 760
-local UI_H   = 480
-local NAV_H  = 38
-local SIDE_W = 160
-local MAIN_W = UI_W - SIDE_W - 6
-
--- ===================== NAMETAG CONFIG =====================
--- Only these two users get custom tags. Everyone else gets "Soul User" (purple default).
-local CUSTOM_TAGS = {
-    ["8046725466"]  = { text = "Soul NIGGA",       style = "owner"    },  -- whatdaskib12345: black bg, white flashing
-    ["842812878"]   = { text = "Staff BOB",        style = "staffbob" },  -- Staff BOB: white bg, red glow
-    ["10670249589"] = { text = "EPAKI NOAH",       style = "epakinoah" }, -- EPAKI NOAH: light green bg, green flashing
-    ["7148067436"]  = { text = "Runic/EXT KILLERS", style = "extkillers" }, -- black bg, red flashing
-}
-
 -- ===================== BILLBOARD TAG =====================
 local function attachTag(character, tagOwner)
-    local userId  = tostring(tagOwner and tagOwner.UserId or 0)
-    local tagData = CUSTOM_TAGS[userId]
-    local style   = tagData and tagData.style or "default"
-    local displayName = tagData and tagData.text or "Soul User"
-
     local head = character:WaitForChild("Head", 10)
     if not head then return end
 
     local existing = head:FindFirstChild("SoulBillboard")
     if existing then existing:Destroy() end
+
+    -- Check if this is the special user
+    local isSpecial = tagOwner and tagOwner.UserId == 5110935296
 
     local billboard = Instance.new("BillboardGui")
     billboard.Name             = "SoulBillboard"
@@ -103,110 +85,119 @@ local function attachTag(character, tagOwner)
     billboard.AlwaysOnTop      = false
     billboard.ResetOnSpawn     = false
     billboard.MaxDistance      = 0
+    billboard.SizeOffset       = Vector2.new(0, 0)
     billboard.ClipsDescendants = false
     billboard.Adornee          = head
     billboard.Parent           = head
 
-    local WHITE        = Color3.new(1, 1, 1)
-    local BLACK        = Color3.fromRGB(8, 8, 8)
-    local GREY         = Color3.fromRGB(180, 180, 180)
+    -- Colour palettes
     local PURPLE_BRIGHT = Color3.fromRGB(180, 0, 255)
     local PURPLE_GLOW   = Color3.fromRGB(210, 80, 255)
     local PURPLE_DIM    = Color3.fromRGB(140, 50, 200)
     local PURPLE_BG     = Color3.fromRGB(20, 5, 30)
     local PURPLE_LOGO   = Color3.fromRGB(35, 10, 50)
 
-    -- Per-style colours
-    local tagBG, strokeC, glowC, textC, handleC, logoC, iconC, iconM
-    if style == "owner" then
-        tagBG   = BLACK;  strokeC = WHITE;        glowC  = WHITE
-        textC   = WHITE;  handleC = GREY;          logoC  = Color3.fromRGB(20,20,20)
-        iconC   = GREY;   iconM   = WHITE
-    elseif style == "epakinoah" then
-        -- Light green bg, green flashing text
-        tagBG   = Color3.fromRGB(180, 255, 180); strokeC = Color3.fromRGB(0, 200, 80);  glowC  = Color3.fromRGB(0, 255, 100)
-        textC   = Color3.fromRGB(0, 180, 60);   handleC = Color3.fromRGB(0, 140, 40);  logoC  = Color3.fromRGB(140, 240, 140)
-        iconC   = Color3.fromRGB(0, 180, 60);   iconM   = Color3.fromRGB(0, 255, 100)
-    elseif style == "extkillers" then
-        -- Black bg, red flashing text
-        tagBG   = BLACK;                         strokeC = Color3.fromRGB(220, 0, 0);   glowC  = Color3.fromRGB(255, 40, 40)
-        textC   = Color3.fromRGB(255, 30, 30);  handleC = Color3.fromRGB(180, 0, 0);   logoC  = Color3.fromRGB(20, 20, 20)
-        iconC   = Color3.fromRGB(200, 0, 0);    iconM   = Color3.fromRGB(255, 80, 80)
-    elseif style == "staffbob" then
-        -- Black bg, red text, red outline
-        tagBG   = BLACK;                   strokeC = Color3.fromRGB(220,0,0);  glowC  = Color3.fromRGB(255,40,40)
-        textC   = Color3.fromRGB(220,0,0); handleC = Color3.fromRGB(180,0,0);  logoC  = Color3.fromRGB(20,20,20)
-        iconC   = Color3.fromRGB(200,0,0); iconM   = Color3.fromRGB(255,80,80)
-    else
-        tagBG   = PURPLE_BG;    strokeC = PURPLE_BRIGHT; glowC  = PURPLE_GLOW
-        textC   = PURPLE_GLOW;  handleC = PURPLE_DIM;    logoC  = PURPLE_LOGO
-        iconC   = PURPLE_GLOW;  iconM   = Color3.fromRGB(255, 120, 255)
-    end
+    -- Special red palette for 5th
+    local RED_S_BG     = Color3.fromRGB(0, 0, 0)
+    local RED_S_BRIGHT = Color3.fromRGB(255, 30, 30)
+    local RED_S_GLOW   = Color3.fromRGB(255, 80, 80)
+    local RED_S_DIM    = Color3.fromRGB(180, 40, 40)
 
-    -- Pill frame
+    local tagBG     = isSpecial and RED_S_BG     or PURPLE_BG
+    local tagStrokeCol = isSpecial and RED_S_BRIGHT or PURPLE_BRIGHT
+    local tagGlowCol   = isSpecial and RED_S_GLOW   or PURPLE_GLOW
+    local tagDimCol    = isSpecial and RED_S_DIM    or PURPLE_DIM
+    local tagLogoCol   = isSpecial and Color3.fromRGB(20, 0, 0) or PURPLE_LOGO
+
+    -- Pill
     local tag = Instance.new("Frame")
-    tag.Size = UDim2.new(1, 0, 1, 0); tag.BackgroundColor3 = tagBG
-    tag.BorderSizePixel = 0; tag.BackgroundTransparency = 1; tag.Active = true
-    tag.Parent = billboard
+    tag.Size                   = UDim2.new(1, 0, 1, 0)
+    tag.BackgroundColor3       = tagBG
+    tag.BorderSizePixel        = 0
+    tag.BackgroundTransparency = 1
+    tag.Active                 = true
+    tag.Parent                 = billboard
     Instance.new("UICorner", tag).CornerRadius = UDim.new(0, 28)
 
     local tagStroke = Instance.new("UIStroke", tag)
-    tagStroke.Color = strokeC; tagStroke.Thickness = 2.5; tagStroke.Transparency = 1
+    tagStroke.Color = tagStrokeCol; tagStroke.Thickness = 2.5; tagStroke.Transparency = 1
 
+    -- Glow ring
     local glowRing = Instance.new("Frame")
     glowRing.Size = UDim2.new(1, 8, 1, 8); glowRing.Position = UDim2.new(0, -4, 0, -4)
     glowRing.BackgroundTransparency = 1; glowRing.BorderSizePixel = 0; glowRing.ZIndex = 0
     glowRing.Parent = tag
     Instance.new("UICorner", glowRing).CornerRadius = UDim.new(0, 32)
     local glowStroke = Instance.new("UIStroke", glowRing)
-    glowStroke.Color = glowC; glowStroke.Thickness = 4; glowStroke.Transparency = 1
+    glowStroke.Color = tagGlowCol; glowStroke.Thickness = 4; glowStroke.Transparency = 1
 
-    -- Logo S shape
+    -- Logo box
     local logoBox = Instance.new("Frame")
     logoBox.Size = UDim2.new(0, 40, 0, 40); logoBox.Position = UDim2.new(0, 8, 0.5, -20)
-    logoBox.BackgroundColor3 = logoC; logoBox.BackgroundTransparency = 1; logoBox.Parent = tag
+    logoBox.BackgroundColor3 = tagLogoCol; logoBox.BackgroundTransparency = 1
+    logoBox.Parent = tag
     Instance.new("UICorner", logoBox).CornerRadius = UDim.new(0, 10)
 
-    local function iconBar(py, col)
+    local function iconBar(py, color)
         local f = Instance.new("Frame")
         f.Size = UDim2.new(0, 22, 0, 4); f.Position = UDim2.new(0, 9, 0, py)
-        f.BackgroundColor3 = col; f.BorderSizePixel = 0; f.Parent = logoBox
-        Instance.new("UICorner", f).CornerRadius = UDim.new(0, 2); return f
+        f.BackgroundColor3 = color; f.BorderSizePixel = 0; f.Parent = logoBox
+        Instance.new("UICorner", f).CornerRadius = UDim.new(0, 2)
+        return f
     end
-    iconBar(8, iconC)
-    local iconMid = iconBar(18, strokeC)
-    iconBar(28, iconC)
+    iconBar(8,  tagGlowCol)
+    local iconMid = iconBar(18, tagStrokeCol)
+    iconBar(28, tagGlowCol)
 
-    local function iconVert(px, py)
+    local function iconVert(px, py, color)
         local f = Instance.new("Frame")
         f.Size = UDim2.new(0, 4, 0, 14); f.Position = UDim2.new(0, px, 0, py)
-        f.BackgroundColor3 = iconC; f.BorderSizePixel = 0; f.Parent = logoBox; return f
+        f.BackgroundColor3 = color; f.BorderSizePixel = 0; f.Parent = logoBox
+        return f
     end
-    iconVert(9, 8); iconVert(27, 18)
+    iconVert(9,  8,  tagGlowCol)
+    iconVert(27, 18, tagStrokeCol)
 
     TweenService:Create(iconMid,
         TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
-        { BackgroundColor3 = iconM }):Play()
+        { BackgroundColor3 = isSpecial and Color3.fromRGB(255, 160, 160) or Color3.fromRGB(255, 120, 255) }
+    ):Play()
 
+    -- Labels
     local nameLabelBaseY   = 7
     local handleLabelBaseY = 32
 
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Size = UDim2.new(1, -58, 0, 24); nameLabel.Position = UDim2.new(0, 54, 0, nameLabelBaseY)
-    nameLabel.BackgroundTransparency = 1; nameLabel.Text = displayName
-    nameLabel.TextColor3 = textC; nameLabel.TextTransparency = 1
-    nameLabel.TextSize = 15; nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = isSpecial and "5th" or "Soul User"
+    nameLabel.TextColor3 = tagGlowCol; nameLabel.TextTransparency = 1
+    nameLabel.TextSize = isSpecial and 18 or 15
+    nameLabel.Font = isSpecial and Enum.Font.GothamBlack or Enum.Font.GothamBold
     nameLabel.TextXAlignment = Enum.TextXAlignment.Left; nameLabel.Parent = tag
+
+    -- Special glow effect for "5th" using a UIStroke
+    if isSpecial then
+        local textGlow = Instance.new("UIStroke", nameLabel)
+        textGlow.Color = Color3.fromRGB(255, 0, 0)
+        textGlow.Thickness = 2
+        textGlow.Transparency = 0.3
+        -- Pulse the glow
+        TweenService:Create(textGlow,
+            TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+            { Transparency = 0.8 }
+        ):Play()
+    end
 
     local handleLabel = Instance.new("TextLabel")
     handleLabel.Size = UDim2.new(1, -58, 0, 18); handleLabel.Position = UDim2.new(0, 54, 0, handleLabelBaseY)
     handleLabel.BackgroundTransparency = 1
     handleLabel.Text = "@" .. (tagOwner and tagOwner.Name or "unknown")
-    handleLabel.TextColor3 = handleC; handleLabel.TextTransparency = 1
+    handleLabel.TextColor3 = tagDimCol; handleLabel.TextTransparency = 1
     handleLabel.TextSize = 12; handleLabel.Font = Enum.Font.Gotham
     handleLabel.TextXAlignment = Enum.TextXAlignment.Left; handleLabel.Parent = tag
 
-    -- Distance scaling
+    -- Distance-proportional size scaling
     local BASE_W, BASE_H, BASE_DIST = 220, 58, 16
     local sizeConn
     sizeConn = RunService.RenderStepped:Connect(function()
@@ -216,7 +207,7 @@ local function attachTag(character, tagOwner)
         billboard.Size = UDim2.new(0, BASE_W * factor, 0, BASE_H * factor)
     end)
 
-    -- Float animation
+    -- Text float up/down
     local floatConn
     floatConn = RunService.Heartbeat:Connect(function()
         if not nameLabel.Parent then floatConn:Disconnect(); return end
@@ -225,182 +216,44 @@ local function attachTag(character, tagOwner)
         handleLabel.Position = UDim2.new(0, 54, 0, handleLabelBaseY + o)
     end)
 
-    -- Click to teleport  use ImageButton overlay (BillboardGui Frames don't fire clicks reliably)
-    local function doTeleport()
-        if tagOwner and tagOwner.Character then
-            local tr = tagOwner.Character:FindFirstChild("HumanoidRootPart")
-            local mr = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-            if tr and mr then
-                mr.CFrame = tr.CFrame * CFrame.new(0, 0, -3)
+    -- Click to teleport
+    tag.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if tagOwner and tagOwner ~= player and tagOwner.Character then
+                local tr = tagOwner.Character:FindFirstChild("HumanoidRootPart")
+                local mr = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+                if tr and mr then mr.CFrame = tr.CFrame * CFrame.new(0, 0, -3) end
             end
         end
-    end
+    end)
 
-
-    -- Glitch effects
+    -- Glitch effect
     local function startGlitch()
+        local FLASH = Color3.fromRGB(255, 255, 255)
+        local fastEnd = tick() + 2
         task.spawn(function()
-            local fastEnd = tick() + 2
-            if style == "owner" then
-                -- Black bg + white FAST FLASHING text
-                local DIM = Color3.fromRGB(150, 150, 150)
-                while tick() < fastEnd and nameLabel.Parent do
-                    nameLabel.TextColor3 = WHITE; task.wait(0.02)
-                    nameLabel.TextColor3 = DIM;   task.wait(0.02)
+            while tick() < fastEnd and nameLabel.Parent do
+                nameLabel.TextColor3 = FLASH;        task.wait(0.03)
+                nameLabel.TextColor3 = tagStrokeCol; task.wait(0.03)
+                nameLabel.TextColor3 = isSpecial and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(100, 0, 200); task.wait(0.02)
+                nameLabel.TextColor3 = tagGlowCol;   task.wait(0.04)
+                tagStroke.Color = isSpecial and Color3.fromRGB(255, 150, 150) or Color3.fromRGB(255, 100, 255); task.wait(0.03)
+                tagStroke.Color = tagStrokeCol
+            end
+            nameLabel.TextColor3 = tagGlowCol
+            tagStroke.Color = tagStrokeCol
+            while nameLabel.Parent do
+                task.wait(math.random(30, 80) / 10)
+                if not nameLabel.Parent then break end
+                for _ = 1, math.random(2, 3) do
+                    nameLabel.TextColor3 = FLASH;        task.wait(0.05)
+                    nameLabel.TextColor3 = tagStrokeCol; task.wait(0.05)
+                    nameLabel.TextColor3 = isSpecial and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(100, 0, 200); task.wait(0.04)
                 end
-                nameLabel.TextColor3 = WHITE
-                -- Continuous rapid flash loop
-                task.spawn(function()
-                    while nameLabel.Parent do
-                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = DIM }):Play()
-                        task.wait(0.18)
-                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = WHITE }):Play()
-                        task.wait(0.18)
-                    end
-                end)
-                while nameLabel.Parent do
-                    task.wait(math.random(6, 16) / 10)
-                    if not nameLabel.Parent then break end
-                    for _ = 1, math.random(4, 9) do
-                        nameLabel.TextColor3 = WHITE; task.wait(0.015)
-                        nameLabel.TextColor3 = DIM;   task.wait(0.015)
-                    end
-                    nameLabel.TextColor3 = WHITE
-                    TweenService:Create(tagStroke, TweenInfo.new(0.04), { Color = DIM }):Play()
-                    task.wait(0.06)
-                    TweenService:Create(tagStroke, TweenInfo.new(0.15), { Color = WHITE }):Play()
-                end
-
-            elseif style == "staffbob" then
-                -- White bg + RED glowing glitch (pulse + random hard flicker)
-                local SB_BRIGHT = Color3.fromRGB(255, 20, 20)
-                local SB_DIM    = Color3.fromRGB(160, 0, 0)
-                local SB_OFF    = Color3.fromRGB(80,  0, 0)
-                -- Initial fast burst
-                while tick() < fastEnd and nameLabel.Parent do
-                    nameLabel.TextColor3 = SB_BRIGHT; task.wait(0.025)
-                    nameLabel.TextColor3 = SB_DIM;    task.wait(0.025)
-                end
-                nameLabel.TextColor3 = SB_BRIGHT
-                -- Continuous slow glow pulse
-                task.spawn(function()
-                    while nameLabel.Parent do
-                        TweenService:Create(nameLabel, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = SB_DIM }):Play()
-                        task.wait(0.6)
-                        TweenService:Create(nameLabel, TweenInfo.new(0.6, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = SB_BRIGHT }):Play()
-                        task.wait(0.6)
-                    end
-                end)
-                -- Glow ring pulse
-                task.spawn(function()
-                    while nameLabel.Parent do
-                        TweenService:Create(glowStroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.1 }):Play()
-                        task.wait(0.5)
-                        TweenService:Create(glowStroke, TweenInfo.new(0.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { Transparency = 0.5 }):Play()
-                        task.wait(0.5)
-                    end
-                end)
-                -- Random hard glitch bursts
-                while nameLabel.Parent do
-                    task.wait(math.random(15, 40) / 10)
-                    if not nameLabel.Parent then break end
-                    for _ = 1, math.random(3, 7) do
-                        nameLabel.TextColor3 = SB_BRIGHT; task.wait(0.02)
-                        nameLabel.TextColor3 = SB_OFF;    task.wait(0.015)
-                        nameLabel.TextColor3 = SB_DIM;    task.wait(0.02)
-                    end
-                    nameLabel.TextColor3 = SB_BRIGHT
-                    TweenService:Create(tagStroke, TweenInfo.new(0.04), { Color = SB_OFF }):Play()
-                    task.wait(0.06)
-                    TweenService:Create(tagStroke, TweenInfo.new(0.2),  { Color = Color3.fromRGB(220, 0, 0) }):Play()
-                end
-
-            elseif style == "epakinoah" then
-                -- Light green bg + GREEN flashing text
-                local GRN_B = Color3.fromRGB(0, 255, 100)
-                local GRN_D = Color3.fromRGB(0, 140, 40)
-                while tick() < fastEnd and nameLabel.Parent do
-                    nameLabel.TextColor3 = GRN_B; task.wait(0.02)
-                    nameLabel.TextColor3 = GRN_D; task.wait(0.02)
-                end
-                nameLabel.TextColor3 = GRN_B
-                -- Continuous fast flash loop
-                task.spawn(function()
-                    while nameLabel.Parent do
-                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = GRN_D }):Play()
-                        task.wait(0.18)
-                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = GRN_B }):Play()
-                        task.wait(0.18)
-                    end
-                end)
-                while nameLabel.Parent do
-                    task.wait(math.random(6, 16) / 10)
-                    if not nameLabel.Parent then break end
-                    for _ = 1, math.random(4, 8) do
-                        nameLabel.TextColor3 = GRN_B; task.wait(0.02)
-                        nameLabel.TextColor3 = GRN_D; task.wait(0.015)
-                    end
-                    nameLabel.TextColor3 = GRN_B
-                    TweenService:Create(tagStroke, TweenInfo.new(0.05), { Color = GRN_D }):Play()
-                    task.wait(0.08)
-                    TweenService:Create(tagStroke, TweenInfo.new(0.2), { Color = GRN_B }):Play()
-                end
-
-            elseif style == "extkillers" then
-                -- Black bg + RED fast flashing text
-                local EXT_B = Color3.fromRGB(255, 30, 30)
-                local EXT_D = Color3.fromRGB(140, 0, 0)
-                while tick() < fastEnd and nameLabel.Parent do
-                    nameLabel.TextColor3 = EXT_B; task.wait(0.02)
-                    nameLabel.TextColor3 = EXT_D; task.wait(0.02)
-                end
-                nameLabel.TextColor3 = EXT_B
-                task.spawn(function()
-                    while nameLabel.Parent do
-                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = EXT_D }):Play()
-                        task.wait(0.18)
-                        TweenService:Create(nameLabel, TweenInfo.new(0.18, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), { TextColor3 = EXT_B }):Play()
-                        task.wait(0.18)
-                    end
-                end)
-                while nameLabel.Parent do
-                    task.wait(math.random(6, 16) / 10)
-                    if not nameLabel.Parent then break end
-                    for _ = 1, math.random(4, 9) do
-                        nameLabel.TextColor3 = EXT_B; task.wait(0.015)
-                        nameLabel.TextColor3 = EXT_D; task.wait(0.015)
-                    end
-                    nameLabel.TextColor3 = EXT_B
-                    TweenService:Create(tagStroke, TweenInfo.new(0.04), { Color = EXT_D }):Play()
-                    task.wait(0.06)
-                    TweenService:Create(tagStroke, TweenInfo.new(0.15), { Color = EXT_B }):Play()
-                end
-
-            else
-                -- Default purple glitch
-                local FLASH = Color3.fromRGB(255, 255, 255)
-                while tick() < fastEnd and nameLabel.Parent do
-                    nameLabel.TextColor3 = FLASH;         task.wait(0.03)
-                    nameLabel.TextColor3 = PURPLE_BRIGHT; task.wait(0.03)
-                    nameLabel.TextColor3 = PURPLE_GLOW;   task.wait(0.04)
-                    tagStroke.Color = Color3.fromRGB(255, 100, 255); task.wait(0.03)
-                    tagStroke.Color = PURPLE_BRIGHT
-                end
-                nameLabel.TextColor3 = PURPLE_GLOW
-                tagStroke.Color = PURPLE_BRIGHT
-                while nameLabel.Parent do
-                    task.wait(math.random(30, 80) / 10)
-                    if not nameLabel.Parent then break end
-                    for _ = 1, math.random(2, 3) do
-                        nameLabel.TextColor3 = FLASH;         task.wait(0.05)
-                        nameLabel.TextColor3 = PURPLE_BRIGHT; task.wait(0.05)
-                        nameLabel.TextColor3 = PURPLE_GLOW;   task.wait(0.04)
-                    end
-                    nameLabel.TextColor3 = PURPLE_GLOW
-                    TweenService:Create(tagStroke, TweenInfo.new(0.1), { Color = Color3.fromRGB(255, 160, 255) }):Play()
-                    task.wait(0.15)
-                    TweenService:Create(tagStroke, TweenInfo.new(0.4), { Color = PURPLE_BRIGHT }):Play()
-                end
+                nameLabel.TextColor3 = tagGlowCol
+                TweenService:Create(tagStroke, TweenInfo.new(0.1), { Color = isSpecial and Color3.fromRGB(255, 180, 180) or Color3.fromRGB(255, 160, 255) }):Play()
+                task.wait(0.15)
+                TweenService:Create(tagStroke, TweenInfo.new(0.4), { Color = tagStrokeCol }):Play()
             end
         end)
     end
@@ -409,7 +262,7 @@ local function attachTag(character, tagOwner)
     local fi = TweenInfo.new(0.6, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
     TweenService:Create(tag,         fi, { BackgroundTransparency = 0 }):Play()
     TweenService:Create(tagStroke,   fi, { Transparency = 0 }):Play()
-    TweenService:Create(glowStroke,  fi, { Transparency = 0.5 }):Play()
+    TweenService:Create(glowStroke,  fi, { Transparency = 0.6 }):Play()
     TweenService:Create(logoBox,     fi, { BackgroundTransparency = 0 }):Play()
     TweenService:Create(nameLabel,   fi, { TextTransparency = 0 }):Play()
     TweenService:Create(handleLabel, fi, { TextTransparency = 0 }):Play()
@@ -417,35 +270,53 @@ local function attachTag(character, tagOwner)
 end
 
 -- ===================== MARKER-BASED MUTUAL TAGGING =====================
+-- We plant a tiny invisible BillboardGui ("SoulV1Active") on our own Head.
+-- Because BillboardGui replicates from the character to ALL clients automatically,
+-- any other player who runs this script will see the marker and show our tag.
+-- We do the same in reverse for them.
+
 local MARKER_NAME = "SoulV1Active"
 
 local function plantMarker(character)
     local head = character:WaitForChild("Head", 10)
     if not head or head:FindFirstChild(MARKER_NAME) then return end
     local marker = Instance.new("BillboardGui")
-    marker.Name = MARKER_NAME; marker.Size = UDim2.new(0,0,0,0)
-    marker.Enabled = false; marker.Parent = head
+    marker.Name    = MARKER_NAME
+    marker.Size    = UDim2.new(0, 0, 0, 0)
+    marker.Enabled = false
+    marker.Parent  = head
+    -- Also show our own tag to ourselves
     attachTag(character, player)
 end
 
 if player.Character then task.spawn(plantMarker, player.Character) end
 player.CharacterAdded:Connect(plantMarker)
 
+-- Watch another player: as soon as their Head has SoulV1Active, show their tag
+-- Special userIds always get their tag shown regardless of marker
+local ALWAYS_TAG = {
+    [5110935296] = true,
+}
+
 local function watchPlayer(p)
     if p == player then return end
-    local isKnown = CUSTOM_TAGS[tostring(p.UserId)] ~= nil
+    local alwaysShow = ALWAYS_TAG[p.UserId] == true
     local function onCharAdded(char)
         task.spawn(function()
             local head = char:WaitForChild("Head", 10)
             if not head then return end
-            -- Known users always get their tag shown, no marker needed
-            if isKnown or head:FindFirstChild(MARKER_NAME) then
+            -- Always show tag for special users, no marker needed
+            if alwaysShow then
+                attachTag(char, p); return
+            end
+            if head:FindFirstChild(MARKER_NAME) then
                 attachTag(char, p); return
             end
             local conn
             conn = head.ChildAdded:Connect(function(child)
                 if child.Name == MARKER_NAME then
-                    conn:Disconnect(); attachTag(char, p)
+                    conn:Disconnect()
+                    attachTag(char, p)
                 end
             end)
             char.AncestryChanged:Connect(function()
@@ -466,49 +337,6 @@ Players.PlayerRemoving:Connect(function(p)
         if h then
             local bb = h:FindFirstChild("SoulBillboard")
             if bb then bb:Destroy() end
-        end
-    end
-end)
-
--- ===================== TAG TELEPORT SYSTEM =====================
--- Press E while looking at / near a tagged player to teleport to them
--- Also adds a highlight ring when cursor is close to a tagged player
-local taggedPlayers = {}  -- populated by watchPlayer / plantMarker
-
-local function getNearestTaggedToMouse()
-    local mouse = player:GetMouse()
-    local closest, closestDist = nil, 180  -- pixel threshold
-    local GuiService = game:GetService("GuiService")
-    local inset = GuiService:GetGuiInset()
-    local mousePos = Vector2.new(mouse.X, mouse.Y + inset.Y)
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if not CUSTOM_TAGS[tostring(p.UserId)] then continue end
-        if not p.Character then continue end
-        local head = p.Character:FindFirstChild("Head")
-        if not head then continue end
-        local screenPos, onScreen = camera:WorldToViewportPoint(head.Position)
-        if not onScreen then continue end
-        local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-        if dist < closestDist then
-            closestDist = dist
-            closest = p
-        end
-    end
-    return closest
-end
-
--- E key teleport to nearest tagged player
-UserInputService.InputBegan:Connect(function(inp, gp)
-    if gp then return end
-    if inp.KeyCode == Enum.KeyCode.E then
-        local target = getNearestTaggedToMouse()
-        if target and target.Character then
-            local tr = target.Character:FindFirstChild("HumanoidRootPart")
-            local mr = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-            if tr and mr then
-                mr.CFrame = tr.CFrame * CFrame.new(0, 0, -3)
-            end
         end
     end
 end)
@@ -765,7 +593,7 @@ welcomeCard.Size = UDim2.new(1, -24, 0, 72)
 local welcomeTitle = Instance.new("TextLabel")
 welcomeTitle.Size = UDim2.new(1, -20, 0, 34); welcomeTitle.Position = UDim2.new(0, 14, 0, 8)
 welcomeTitle.BackgroundTransparency = 1
-welcomeTitle.Text = "Welcome, " .. player.Name .. " "
+welcomeTitle.Text = "Welcome, " .. player.Name .. " 👋"
 welcomeTitle.TextColor3 = TXT_WHITE; welcomeTitle.TextSize = 20
 welcomeTitle.Font = Enum.Font.GothamBold; welcomeTitle.TextXAlignment = Enum.TextXAlignment.Left
 welcomeTitle.Parent = welcomeCard
@@ -801,7 +629,7 @@ local function infoCard(label, value, col, valColor)
 end
 
 infoCard("Version",  "v1",       0)
-infoCard("Status",   "o Loaded", 1, GREEN_LOADED)
+infoCard("Status",   "● Loaded", 1, GREEN_LOADED)
 infoCard("Executor", "Xeno",     2)
 
 sectionHeader(homePage, "CHANGELOG", 166)
@@ -817,7 +645,7 @@ local function clLabel(text, posY, size, color, font)
 end
 clLabel("v1",             8,  18, RED_GLOW,  Enum.Font.GothamBold)
 clLabel("Initial Release",26, 22, TXT_WHITE, Enum.Font.GothamBold)
-clLabel("Welcome to my script! We have TP, fly and many more coming soon. This is a beta version - make sure to give me suggestions! My Discord is soulownsu", 50, 28, TXT_DIM, Enum.Font.Gotham)
+clLabel("Welcome to my script! We have TP, fly and many more coming soon. This is a beta version — make sure to give me suggestions! My Discord is soulownsu", 50, 28, TXT_DIM, Enum.Font.Gotham)
 
 homeTabBtn.MouseButton1Click:Connect(function() switchTab("Home") end)
 
@@ -836,7 +664,7 @@ Instance.new("UICorner", avatarBox).CornerRadius = UDim.new(0, 8)
 
 local avatarIcon = Instance.new("TextLabel")
 avatarIcon.Size = UDim2.new(1, 0, 1, 0); avatarIcon.BackgroundTransparency = 1
-avatarIcon.Text = ""; avatarIcon.TextSize = 22
+avatarIcon.Text = "👤"; avatarIcon.TextSize = 22
 avatarIcon.Font = Enum.Font.Gotham; avatarIcon.Parent = avatarBox
 
 local searchBox = Instance.new("TextBox")
@@ -892,6 +720,7 @@ clearBtn.MouseButton1Click:Connect(function()
     resultLabel.Text = "No target selected"; resultLabel.TextColor3 = TXT_DIM
 end)
 
+-- Teleport TO target
 teleBtn.MouseButton1Click:Connect(function()
     if selectedTarget and selectedTarget.Character then
         local r = selectedTarget.Character:FindFirstChild("HumanoidRootPart")
@@ -912,10 +741,12 @@ bringBtn.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Sit on Head — toggle: Heartbeat CFrame lock (replicates to all clients)
 local headFollowConn = nil
 local sittingOnHead = false
 sitBtn.MouseButton1Click:Connect(function()
     if sittingOnHead then
+        -- Detach
         if headFollowConn then headFollowConn:Disconnect(); headFollowConn = nil end
         sittingOnHead = false
         local myHum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -923,31 +754,38 @@ sitBtn.MouseButton1Click:Connect(function()
         resultLabel.Text = "Got off head"; resultLabel.TextColor3 = TXT_DIM
         return
     end
+
     if not selectedTarget or not selectedTarget.Character then
         resultLabel.Text = "No target selected!"; resultLabel.TextColor3 = Color3.fromRGB(255, 80, 50); return
     end
+
     sittingOnHead = true
     resultLabel.Text = "Sitting on " .. selectedTarget.Name .. "'s head"
     resultLabel.TextColor3 = GREEN_LOADED
+
     headFollowConn = RunService.Heartbeat:Connect(function()
         if not sittingOnHead then headFollowConn:Disconnect(); headFollowConn = nil; return end
-        local myChar = player.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        local myHum  = myChar and myChar:FindFirstChildOfClass("Humanoid")
-        local tChar  = selectedTarget and selectedTarget.Character
-        local tHead  = tChar and tChar:FindFirstChild("Head")
+        local myChar    = player.Character
+        local myRoot    = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        local myHum     = myChar and myChar:FindFirstChildOfClass("Humanoid")
+        local tChar     = selectedTarget and selectedTarget.Character
+        local tHead     = tChar and tChar:FindFirstChild("Head")
         if not myRoot or not tHead then
             if headFollowConn then headFollowConn:Disconnect(); headFollowConn = nil end
             sittingOnHead = false; return
         end
         if myHum then myHum.Sit = true end
+        -- Sit directly on top of the head, matching their orientation
         myRoot.CFrame = tHead.CFrame * CFrame.new(0, tHead.Size.Y + 0.8, 0)
     end)
 end)
 
+-- Backpack Mode — toggle: Heartbeat CFrame lock on their back (replicates to all clients)
 local backpackFollowConn = nil
 local inBackpackMode = false
 backpackBtn.MouseButton1Click:Connect(function()
     if inBackpackMode then
+        -- Detach
         if backpackFollowConn then backpackFollowConn:Disconnect(); backpackFollowConn = nil end
         inBackpackMode = false
         local myHum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -955,32 +793,39 @@ backpackBtn.MouseButton1Click:Connect(function()
         resultLabel.Text = "Left backpack mode"; resultLabel.TextColor3 = TXT_DIM
         return
     end
+
     if not selectedTarget or not selectedTarget.Character then
         resultLabel.Text = "No target selected!"; resultLabel.TextColor3 = Color3.fromRGB(255, 80, 50); return
     end
+
     inBackpackMode = true
     resultLabel.Text = "Backpacking " .. selectedTarget.Name
     resultLabel.TextColor3 = GREEN_LOADED
+
     backpackFollowConn = RunService.Heartbeat:Connect(function()
         if not inBackpackMode then backpackFollowConn:Disconnect(); backpackFollowConn = nil; return end
-        local myChar = player.Character; local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
-        local myHum  = myChar and myChar:FindFirstChildOfClass("Humanoid")
-        local tChar  = selectedTarget and selectedTarget.Character
-        local tRoot  = tChar and tChar:FindFirstChild("HumanoidRootPart")
+        local myChar    = player.Character
+        local myRoot    = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        local myHum     = myChar and myChar:FindFirstChildOfClass("Humanoid")
+        local tChar     = selectedTarget and selectedTarget.Character
+        local tRoot     = tChar and tChar:FindFirstChild("HumanoidRootPart")
         if not myRoot or not tRoot then
             if backpackFollowConn then backpackFollowConn:Disconnect(); backpackFollowConn = nil end
             inBackpackMode = false; return
         end
         if myHum then myHum.Sit = true end
+        -- Sit on their BACK: positive Z = behind them in local space, slightly up
         myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 1.0, 1.6)
     end)
 end)
 
+-- Face Bang — row 4 of the grid (below unview/clear)
 local faceBangEnabled = false
 local faceBangBtn = halfBtn(playerPage, "Face Bang", 0, 4)
 faceBangBtn.MouseButton1Click:Connect(function()
     faceBangEnabled = not faceBangEnabled
     if faceBangEnabled then
+        -- Find dot inside the button and turn green
         local dot = faceBangBtn:FindFirstChildWhichIsA("Frame")
         if dot then TweenService:Create(dot, TweenInfo.new(0.15), { BackgroundColor3 = GREEN_LOADED }):Play() end
         resultLabel.Text = "Face Bang active!"; resultLabel.TextColor3 = GREEN_LOADED
@@ -991,6 +836,7 @@ faceBangBtn.MouseButton1Click:Connect(function()
         local dot = faceBangBtn:FindFirstChildWhichIsA("Frame")
         if dot then TweenService:Create(dot, TweenInfo.new(0.15), { BackgroundColor3 = RED_GLOW }):Play() end
         resultLabel.Text = "Face Bang disabled"; resultLabel.TextColor3 = TXT_DIM
+        -- Clean up any GUI left by the script
         for _, g in ipairs(player.PlayerGui:GetChildren()) do
             if g.Name:lower():find("face") or g.Name:lower():find("mic") then
                 pcall(function() g:Destroy() end)
@@ -1008,9 +854,13 @@ tabs["Animations"].page = animPage
 
 sectionHeader(animPage, "ANIMATIONS", 10)
 
+-- Reanim button
 local reanimBtn = Instance.new("TextButton")
-reanimBtn.Size = UDim2.new(1, -24, 0, 48); reanimBtn.Position = UDim2.new(0, 12, 0, 34)
-reanimBtn.BackgroundColor3 = BG_CARD; reanimBtn.Text = ""; reanimBtn.Parent = animPage
+reanimBtn.Size = UDim2.new(1, -24, 0, 48)
+reanimBtn.Position = UDim2.new(0, 12, 0, 34)
+reanimBtn.BackgroundColor3 = BG_CARD
+reanimBtn.Text = ""
+reanimBtn.Parent = animPage
 Instance.new("UICorner", reanimBtn).CornerRadius = UDim.new(0, 10)
 local reanimStroke = Instance.new("UIStroke", reanimBtn)
 reanimStroke.Color = RED_STROKE; reanimStroke.Thickness = 1.5; reanimStroke.Transparency = 0.4
@@ -1056,8 +906,10 @@ reanimBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
+-- Emotes button
 local emotesBtn = Instance.new("TextButton")
-emotesBtn.Size = UDim2.new(1, -24, 0, 48); emotesBtn.Position = UDim2.new(0, 12, 0, 96)
+emotesBtn.Size = UDim2.new(1, -24, 0, 48)
+emotesBtn.Position = UDim2.new(0, 12, 0, 96)
 emotesBtn.BackgroundColor3 = BG_CARD; emotesBtn.Text = ""; emotesBtn.Parent = animPage
 Instance.new("UICorner", emotesBtn).CornerRadius = UDim.new(0, 10)
 local emotesStroke = Instance.new("UIStroke", emotesBtn)
@@ -1104,55 +956,6 @@ emotesBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- ===================== ANIMATIONS BUTTON =====================
-local animsBtn = Instance.new("TextButton")
-animsBtn.Size = UDim2.new(1, -24, 0, 48); animsBtn.Position = UDim2.new(0, 12, 0, 158)
-animsBtn.BackgroundColor3 = BG_CARD; animsBtn.Text = ""; animsBtn.Parent = animPage
-Instance.new("UICorner", animsBtn).CornerRadius = UDim.new(0, 10)
-local animsStroke = Instance.new("UIStroke", animsBtn)
-animsStroke.Color = RED_STROKE; animsStroke.Thickness = 1.5; animsStroke.Transparency = 0.4
-
-local animsDot = Instance.new("Frame")
-animsDot.Size = UDim2.new(0, 10, 0, 10); animsDot.Position = UDim2.new(0, 14, 0.5, -5)
-animsDot.BackgroundColor3 = RED_GLOW; animsDot.Parent = animsBtn
-Instance.new("UICorner", animsDot).CornerRadius = UDim.new(1, 0)
-
-local animsLbl = Instance.new("TextLabel")
-animsLbl.Size = UDim2.new(1, -36, 1, 0); animsLbl.Position = UDim2.new(0, 32, 0, 0)
-animsLbl.BackgroundTransparency = 1; animsLbl.Text = "Animations"
-animsLbl.TextColor3 = TXT_WHITE; animsLbl.TextSize = 15
-animsLbl.Font = Enum.Font.GothamBold; animsLbl.TextXAlignment = Enum.TextXAlignment.Left
-animsLbl.Parent = animsBtn
-
-local animsSubLbl = Instance.new("TextLabel")
-animsSubLbl.Size = UDim2.new(1, -36, 0, 16); animsSubLbl.Position = UDim2.new(0, 32, 1, -18)
-animsSubLbl.BackgroundTransparency = 1; animsSubLbl.Text = "Open animation menu"
-animsSubLbl.TextColor3 = TXT_DIM; animsSubLbl.TextSize = 11
-animsSubLbl.Font = Enum.Font.Gotham; animsSubLbl.TextXAlignment = Enum.TextXAlignment.Left
-animsSubLbl.Parent = animsBtn
-
-animsBtn.MouseEnter:Connect(function()
-    TweenService:Create(animsBtn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play()
-    TweenService:Create(animsDot, TweenInfo.new(0.12), { BackgroundColor3 = GREEN_LOADED }):Play()
-end)
-animsBtn.MouseLeave:Connect(function()
-    TweenService:Create(animsBtn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play()
-    TweenService:Create(animsDot, TweenInfo.new(0.12), { BackgroundColor3 = RED_GLOW }):Play()
-end)
-animsBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(animsDot, TweenInfo.new(0.1), { BackgroundColor3 = GREEN_LOADED }):Play()
-    animsLbl.Text = "Loading Animations..."
-    animsLbl.TextColor3 = GREEN_LOADED
-    task.spawn(function()
-        pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/error/refs/heads/main/er", true))()
-        end)
-        animsLbl.Text = "Animations"
-        animsLbl.TextColor3 = TXT_WHITE
-        TweenService:Create(animsDot, TweenInfo.new(0.2), { BackgroundColor3 = RED_GLOW }):Play()
-    end)
-end)
-
 animTabBtn.MouseButton1Click:Connect(function() switchTab("Animations") end)
 
 -- ===================== NOTIFICATION SYSTEM =====================
@@ -1161,55 +964,88 @@ notifGui.Name = "SoulNotifs"; notifGui.ResetOnSpawn = false
 notifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 notifGui.DisplayOrder = 998; notifGui.Parent = gui
 
-local notifStack = {}
+local notifStack = {}  -- active notification frames
+local NOTIF_GAP = 8
 
 local bellSound = Instance.new("Sound")
-bellSound.SoundId = "rbxassetid://9120386954"
+bellSound.SoundId = "rbxassetid://9120386954"  -- verified bell ding sound
 bellSound.Volume = 1
 bellSound.RollOffMaxDistance = 0
-bellSound.Parent = player.PlayerGui
+bellSound.Parent = player.PlayerGui  -- parent to PlayerGui so it always plays
 
 local function showNotif(label, isOn)
+    -- Play bell
     bellSound:Play()
+
+    -- Shift existing notifs up
     for _, n in ipairs(notifStack) do
         local cur = n.Position
         TweenService:Create(n, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
             { Position = UDim2.new(cur.X.Scale, cur.X.Offset, cur.Y.Scale, cur.Y.Offset - 58) }):Play()
     end
+
     local nf = Instance.new("Frame")
-    nf.Size = UDim2.new(0, 0, 0, 46); nf.Position = UDim2.new(0, 16, 1, -66)
-    nf.BackgroundColor3 = Color3.fromRGB(18, 18, 22); nf.BackgroundTransparency = 0.05
-    nf.BorderSizePixel = 0; nf.ClipsDescendants = true; nf.ZIndex = 50; nf.Parent = notifGui
+    nf.Size = UDim2.new(0, 0, 0, 46)  -- animates width in
+    nf.Position = UDim2.new(0, 16, 1, -66)
+    nf.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+    nf.BackgroundTransparency = 0.05
+    nf.BorderSizePixel = 0
+    nf.ClipsDescendants = true
+    nf.ZIndex = 50
+    nf.Parent = notifGui
     Instance.new("UICorner", nf).CornerRadius = UDim.new(0, 10)
     local ns = Instance.new("UIStroke", nf)
-    ns.Color = isOn and GREEN_LOADED or RED_GLOW; ns.Thickness = 1.5; ns.Transparency = 0.2
+    ns.Color = isOn and GREEN_LOADED or RED_GLOW
+    ns.Thickness = 1.5; ns.Transparency = 0.2
+
+    -- Bell icon
     local bell = Instance.new("TextLabel")
     bell.Size = UDim2.new(0, 30, 1, 0); bell.Position = UDim2.new(0, 8, 0, 0)
-    bell.BackgroundTransparency = 1; bell.Text = ""; bell.TextSize = 18; bell.Font = Enum.Font.Gotham; bell.ZIndex = 51; bell.Parent = nf
+    bell.BackgroundTransparency = 1; bell.Text = "🔔"
+    bell.TextSize = 18; bell.Font = Enum.Font.Gotham; bell.ZIndex = 51
+    bell.Parent = nf
+
+    -- Status dot
     local sdot = Instance.new("Frame")
     sdot.Size = UDim2.new(0, 8, 0, 8); sdot.Position = UDim2.new(0, 34, 0.5, -4)
-    sdot.BackgroundColor3 = isOn and GREEN_LOADED or RED_GLOW; sdot.ZIndex = 51; sdot.Parent = nf
+    sdot.BackgroundColor3 = isOn and GREEN_LOADED or RED_GLOW
+    sdot.ZIndex = 51; sdot.Parent = nf
     Instance.new("UICorner", sdot).CornerRadius = UDim.new(1, 0)
+
+    -- Main text
     local ntitle = Instance.new("TextLabel")
     ntitle.Size = UDim2.new(1, -50, 0, 24); ntitle.Position = UDim2.new(0, 48, 0, 6)
-    ntitle.BackgroundTransparency = 1; ntitle.Text = isOn and "Activated" or "Deactivated"
-    ntitle.TextColor3 = isOn and GREEN_LOADED or RED_GLOW; ntitle.TextSize = 13; ntitle.Font = Enum.Font.GothamBold
-    ntitle.TextXAlignment = Enum.TextXAlignment.Left; ntitle.ZIndex = 51; ntitle.Parent = nf
+    ntitle.BackgroundTransparency = 1
+    ntitle.Text = isOn and "Activated" or "Deactivated"
+    ntitle.TextColor3 = isOn and GREEN_LOADED or RED_GLOW
+    ntitle.TextSize = 13; ntitle.Font = Enum.Font.GothamBold
+    ntitle.TextXAlignment = Enum.TextXAlignment.Left; ntitle.ZIndex = 51
+    ntitle.Parent = nf
+
+    -- Sub text (button name)
     local nsub = Instance.new("TextLabel")
     nsub.Size = UDim2.new(1, -50, 0, 16); nsub.Position = UDim2.new(0, 48, 0, 26)
     nsub.BackgroundTransparency = 1; nsub.Text = label
     nsub.TextColor3 = TXT_DIM; nsub.TextSize = 11; nsub.Font = Enum.Font.Gotham
-    nsub.TextXAlignment = Enum.TextXAlignment.Left; nsub.ZIndex = 51; nsub.Parent = nf
+    nsub.TextXAlignment = Enum.TextXAlignment.Left; nsub.ZIndex = 51
+    nsub.Parent = nf
+
+    -- Slide in
     table.insert(notifStack, nf)
     TweenService:Create(nf, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
         { Size = UDim2.new(0, 240, 0, 46) }):Play()
+
+    -- Auto dismiss after 2.5s
     task.delay(2.5, function()
         if not nf.Parent then return end
         TweenService:Create(nf, TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
             { Size = UDim2.new(0, 0, 0, 46), BackgroundTransparency = 1 }):Play()
         TweenService:Create(ns, TweenInfo.new(0.25), { Transparency = 1 }):Play()
         task.wait(0.3)
-        for i, n in ipairs(notifStack) do if n == nf then table.remove(notifStack, i); break end end
+        -- Remove from stack and reposition remaining
+        for i, n in ipairs(notifStack) do
+            if n == nf then table.remove(notifStack, i); break end
+        end
         for i, n in ipairs(notifStack) do
             local targetY = -66 - (i - 1) * 54
             TweenService:Create(n, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
@@ -1283,28 +1119,36 @@ local autoClickGui = nil
 
 makeToggle(combatPage, "Auto Click", 32,
     function()
+        -- Open autoclicker popup GUI
         if autoClickGui and autoClickGui.Parent then autoClickGui:Destroy() end
+
         autoClickGui = Instance.new("ScreenGui")
         autoClickGui.Name = "SoulAutoClick"; autoClickGui.ResetOnSpawn = false
         autoClickGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
         autoClickGui.DisplayOrder = 30; autoClickGui.Parent = player.PlayerGui
+
         local acFrame = Instance.new("Frame")
         acFrame.Size = UDim2.new(0, 260, 0, 160); acFrame.Position = UDim2.new(0.5,-130,0.5,-80)
-        acFrame.BackgroundColor3 = Color3.fromRGB(18,18,22); acFrame.BorderSizePixel = 0; acFrame.Parent = autoClickGui
+        acFrame.BackgroundColor3 = Color3.fromRGB(18,18,22); acFrame.BorderSizePixel = 0
+        acFrame.Parent = autoClickGui
         Instance.new("UICorner", acFrame).CornerRadius = UDim.new(0, 12)
         local acs = Instance.new("UIStroke", acFrame); acs.Color = Color3.fromRGB(139,0,0); acs.Thickness = 1.5
+
+        -- Header
         local acHdr = Instance.new("Frame")
         acHdr.Size = UDim2.new(1,0,0,40); acHdr.BackgroundColor3 = Color3.fromRGB(10,10,14)
         acHdr.BorderSizePixel = 0; acHdr.Parent = acFrame
         Instance.new("UICorner", acHdr).CornerRadius = UDim.new(0,12)
+
         local acTitle = Instance.new("TextLabel")
         acTitle.Size = UDim2.new(1,-44,1,0); acTitle.Position = UDim2.new(0,14,0,0)
-        acTitle.BackgroundTransparency = 1; acTitle.Text = "  Auto Clicker"
+        acTitle.BackgroundTransparency = 1; acTitle.Text = "🖱️  Auto Clicker"
         acTitle.TextColor3 = Color3.new(1,1,1); acTitle.TextSize = 14; acTitle.Font = Enum.Font.GothamBold
         acTitle.TextXAlignment = Enum.TextXAlignment.Left; acTitle.Parent = acHdr
+
         local acClose = Instance.new("TextButton")
         acClose.Size = UDim2.new(0,26,0,26); acClose.Position = UDim2.new(1,-32,0.5,-13)
-        acClose.BackgroundColor3 = Color3.fromRGB(80,0,0); acClose.Text = "x"
+        acClose.BackgroundColor3 = Color3.fromRGB(80,0,0); acClose.Text = "✕"
         acClose.TextColor3 = Color3.new(1,1,1); acClose.TextSize = 13; acClose.Font = Enum.Font.GothamBold
         acClose.Parent = acHdr
         Instance.new("UICorner", acClose).CornerRadius = UDim.new(0,6)
@@ -1312,22 +1156,30 @@ makeToggle(combatPage, "Auto Click", 32,
             if autoClickConn then autoClickConn:Disconnect(); autoClickConn = nil end
             autoClickActive = false; autoClickGui:Destroy()
         end)
+
+        -- Status label
         local acStatus = Instance.new("TextLabel")
         acStatus.Size = UDim2.new(1,-24,0,22); acStatus.Position = UDim2.new(0,12,0,50)
         acStatus.BackgroundTransparency = 1; acStatus.Text = "Status: Inactive"
         acStatus.TextColor3 = Color3.fromRGB(160,70,70); acStatus.TextSize = 13
-        acStatus.Font = Enum.Font.Gotham; acStatus.TextXAlignment = Enum.TextXAlignment.Center; acStatus.Parent = acFrame
+        acStatus.Font = Enum.Font.Gotham; acStatus.TextXAlignment = Enum.TextXAlignment.Center
+        acStatus.Parent = acFrame
+
+        -- Activate / Deactivate button
         local acBtn = Instance.new("TextButton")
         acBtn.Size = UDim2.new(1,-24,0,42); acBtn.Position = UDim2.new(0,12,0,80)
         acBtn.BackgroundColor3 = Color3.fromRGB(34,160,60); acBtn.Text = "Activate"
         acBtn.TextColor3 = Color3.new(1,1,1); acBtn.TextSize = 15; acBtn.Font = Enum.Font.GothamBold
         acBtn.Parent = acFrame
         Instance.new("UICorner", acBtn).CornerRadius = UDim.new(0,8)
+
         acBtn.MouseButton1Click:Connect(function()
             autoClickActive = not autoClickActive
             if autoClickActive then
-                acBtn.Text = "Deactivate"; acBtn.BackgroundColor3 = Color3.fromRGB(139,0,0)
-                acStatus.Text = "Status: o Active"; acStatus.TextColor3 = Color3.fromRGB(80,220,100)
+                acBtn.Text = "Deactivate"
+                acBtn.BackgroundColor3 = Color3.fromRGB(139,0,0)
+                acStatus.Text = "Status: ● Active"
+                acStatus.TextColor3 = Color3.fromRGB(80,220,100)
                 autoClickConn = RunService.Heartbeat:Connect(function()
                     local VirtualUser = game:GetService("VirtualUser")
                     pcall(function()
@@ -1338,11 +1190,15 @@ makeToggle(combatPage, "Auto Click", 32,
                     if tool then pcall(function() tool:Activate() end) end
                 end)
             else
-                acBtn.Text = "Activate"; acBtn.BackgroundColor3 = Color3.fromRGB(34,160,60)
-                acStatus.Text = "Status: Inactive"; acStatus.TextColor3 = Color3.fromRGB(160,70,70)
+                acBtn.Text = "Activate"
+                acBtn.BackgroundColor3 = Color3.fromRGB(34,160,60)
+                acStatus.Text = "Status: Inactive"
+                acStatus.TextColor3 = Color3.fromRGB(160,70,70)
                 if autoClickConn then autoClickConn:Disconnect(); autoClickConn = nil end
             end
         end)
+
+        -- Draggable
         local acd, acds, acdp = false, nil, nil
         acHdr.InputBegan:Connect(function(inp)
             if inp.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1386,6 +1242,7 @@ makeToggle(combatPage, "No Clip", 132,
     end, nil
 )
 
+-- ── HITBOX EXPANDER ──────────────────────────────────────────
 sectionHeader(combatPage, "HITBOX", 184)
 
 local hitboxSelections = {}
@@ -1397,10 +1254,14 @@ makeToggle(combatPage, "Hitbox Expander", 206,
                 task.spawn(function()
                     local root = char:WaitForChild("HumanoidRootPart", 5)
                     if not root then return end
+                    -- Use SelectionBox for a clean outline with no resizing
                     local sel = Instance.new("SelectionBox")
-                    sel.Adornee = root; sel.Color3 = Color3.fromRGB(255, 30, 30)
-                    sel.LineThickness = 0.08; sel.SurfaceTransparency = 0.85
-                    sel.SurfaceColor3 = Color3.fromRGB(255, 30, 30); sel.Parent = workspace
+                    sel.Adornee        = root
+                    sel.Color3         = Color3.fromRGB(255, 30, 30)
+                    sel.LineThickness  = 0.08
+                    sel.SurfaceTransparency = 0.85
+                    sel.SurfaceColor3  = Color3.fromRGB(255, 30, 30)
+                    sel.Parent         = workspace
                     hitboxSelections[root] = sel
                 end)
             end
@@ -1411,19 +1272,24 @@ makeToggle(combatPage, "Hitbox Expander", 206,
         Players.PlayerAdded:Connect(addHitbox)
     end,
     function()
-        for _, sel in pairs(hitboxSelections) do pcall(function() sel:Destroy() end) end
+        for _, sel in pairs(hitboxSelections) do
+            pcall(function() sel:Destroy() end)
+        end
         hitboxSelections = {}
     end
 )
 
+-- ── AIMLOCK ───────────────────────────────────────────────────
 sectionHeader(combatPage, "AIMLOCK", 258)
 
 local aimGuiOpen = false
 makeToggle(combatPage, "Aimlock", 280,
     function()
         aimGuiOpen = true
+        -- Remove existing if re-toggled
         local existing = player.PlayerGui:FindFirstChild("AimGUI")
         if existing then existing:Destroy() end
+
         local Players2 = game:GetService("Players")
         local UIS2 = game:GetService("UserInputService")
         local RS2 = game:GetService("RunService")
@@ -1433,6 +1299,7 @@ makeToggle(combatPage, "Aimlock", 280,
         local LP = Players2.LocalPlayer
         local Mouse2 = LP:GetMouse()
         local Cam2 = WS2.CurrentCamera
+
         local AIM_PART = "Head"
         local TEAM_CHECK = true
         local WALL_CHECK = true
@@ -1440,94 +1307,149 @@ makeToggle(combatPage, "Aimlock", 280,
         local AIMLOCK_SMOOTH = 0.15
         local AimlockEnabled = false
         local SilentEnabled = false
-        -- Safe Drawing.new - not all executors support it
-        local fovCircle = nil
-        if typeof(Drawing) ~= "nil" then
-            pcall(function()
-                fovCircle = Drawing.new("Circle")
-                fovCircle.Thickness = 2; fovCircle.NumSides = 100; fovCircle.Radius = FOV_RADIUS
-                fovCircle.Filled = false; fovCircle.Transparency = 0.65; fovCircle.Visible = false
-            end)
-        end
-        if not fovCircle then
-            -- Fallback stub so nothing crashes if Drawing isn't available
-            fovCircle = { Visible=false, Position=Vector2.new(0,0), Radius=FOV_RADIUS, Color=Color3.new(1,0,0), Remove=function() end }
-        end
+
+        local fovCircle = Drawing.new("Circle")
+        fovCircle.Thickness = 2
+        fovCircle.NumSides = 100
+        fovCircle.Radius = FOV_RADIUS
+        fovCircle.Filled = false
+        fovCircle.Transparency = 0.65
+        fovCircle.Visible = false
+
         local aimGui = Instance.new("ScreenGui")
-        aimGui.Name = "AimGUI"; aimGui.ResetOnSpawn = false
-        aimGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; aimGui.DisplayOrder = 25; aimGui.Parent = player.PlayerGui
+        aimGui.Name = "AimGUI"
+        aimGui.ResetOnSpawn = false
+        aimGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        aimGui.DisplayOrder = 25
+        aimGui.Parent = player.PlayerGui
+
         local mainFrame = Instance.new("Frame")
-        mainFrame.Size = UDim2.new(0, 320, 0, 380); mainFrame.Position = UDim2.new(0.5, -160, 1.2, 0)
-        mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30); mainFrame.BorderSizePixel = 0
-        mainFrame.ClipsDescendants = true; mainFrame.Parent = aimGui
+        mainFrame.Size = UDim2.new(0, 320, 0, 380)
+        mainFrame.Position = UDim2.new(0.5, -160, 1.2, 0)
+        mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+        mainFrame.BorderSizePixel = 0
+        mainFrame.ClipsDescendants = true
+        mainFrame.Parent = aimGui
         Instance.new("UICorner", mainFrame).CornerRadius = UDim.new(0, 14)
         local mStroke = Instance.new("UIStroke", mainFrame)
         mStroke.Color = Color3.fromRGB(139, 0, 0); mStroke.Thickness = 2; mStroke.Transparency = 0.3
+
         local titleBar = Instance.new("Frame")
-        titleBar.Size = UDim2.new(1, 0, 0, 40); titleBar.BackgroundColor3 = Color3.fromRGB(35, 5, 5)
+        titleBar.Size = UDim2.new(1, 0, 0, 40)
+        titleBar.BackgroundColor3 = Color3.fromRGB(35, 5, 5)
         titleBar.BorderSizePixel = 0; titleBar.Parent = mainFrame
+
         local titleLabel = Instance.new("TextLabel")
         titleLabel.Size = UDim2.new(1, -50, 1, 0); titleLabel.Position = UDim2.new(0, 15, 0, 0)
-        titleLabel.BackgroundTransparency = 1; titleLabel.Text = "  Soul's Aim Control"
+        titleLabel.BackgroundTransparency = 1; titleLabel.Text = "🎯  Soul's Aim Control"
         titleLabel.TextColor3 = Color3.new(1, 1, 1); titleLabel.TextSize = 16
-        titleLabel.Font = Enum.Font.GothamBold; titleLabel.TextXAlignment = Enum.TextXAlignment.Left; titleLabel.Parent = titleBar
+        titleLabel.Font = Enum.Font.GothamBold; titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+        titleLabel.Parent = titleBar
+
         local closeBtn = Instance.new("TextButton")
         closeBtn.Size = UDim2.new(0, 28, 0, 28); closeBtn.Position = UDim2.new(1, -34, 0.5, -14)
-        closeBtn.BackgroundColor3 = Color3.fromRGB(139, 0, 0); closeBtn.Text = "x"
-        closeBtn.TextColor3 = Color3.new(1,1,1); closeBtn.TextSize = 14; closeBtn.Font = Enum.Font.GothamBold; closeBtn.Parent = titleBar
+        closeBtn.BackgroundColor3 = Color3.fromRGB(139, 0, 0); closeBtn.Text = "✕"
+        closeBtn.TextColor3 = Color3.new(1,1,1); closeBtn.TextSize = 14; closeBtn.Font = Enum.Font.GothamBold
+        closeBtn.Parent = titleBar
         Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
-        closeBtn.MouseButton1Click:Connect(function() pcall(function() if fovCircle and fovCircle.Remove then fovCircle:Remove() end end); aimGui:Destroy() end)
+        closeBtn.MouseButton1Click:Connect(function()
+            pcall(function() fovCircle:Remove() end)
+            aimGui:Destroy()
+        end)
+
         local content = Instance.new("ScrollingFrame")
-        content.Size = UDim2.new(1, -20, 1, -50); content.Position = UDim2.new(0, 10, 0, 50)
+        content.Size = UDim2.new(1, -20, 1, -50)
+        content.Position = UDim2.new(0, 10, 0, 50)
         content.BackgroundTransparency = 1; content.BorderSizePixel = 0
         content.ScrollBarThickness = 4; content.ScrollBarImageColor3 = Color3.fromRGB(139,0,0)
-        content.CanvasSize = UDim2.new(0, 0, 0, 500); content.Parent = mainFrame
+        content.CanvasSize = UDim2.new(0, 0, 0, 500)
+        content.Parent = mainFrame
+
         local function createToggle2(name, posY, default, callback)
             local lbl = Instance.new("TextLabel")
             lbl.Size = UDim2.new(0.6, 0, 0, 35); lbl.Position = UDim2.new(0, 10, 0, posY)
             lbl.BackgroundTransparency = 1; lbl.Text = name
             lbl.TextColor3 = Color3.fromRGB(220, 180, 180); lbl.TextSize = 14
-            lbl.Font = Enum.Font.GothamSemibold; lbl.TextXAlignment = Enum.TextXAlignment.Left; lbl.Parent = content
+            lbl.Font = Enum.Font.GothamSemibold; lbl.TextXAlignment = Enum.TextXAlignment.Left
+            lbl.Parent = content
+
             local tog = Instance.new("TextButton")
             tog.Size = UDim2.new(0, 80, 0, 32); tog.Position = UDim2.new(1, -90, 0, posY + 1)
             tog.BackgroundColor3 = default and Color3.fromRGB(50,180,80) or Color3.fromRGB(60,0,0)
             tog.Text = default and "ON" or "OFF"
-            tog.TextColor3 = Color3.new(1,1,1); tog.TextSize = 14; tog.Font = Enum.Font.GothamBold; tog.Parent = content
+            tog.TextColor3 = Color3.new(1,1,1); tog.TextSize = 14; tog.Font = Enum.Font.GothamBold
+            tog.Parent = content
             Instance.new("UICorner", tog).CornerRadius = UDim.new(0, 8)
+
             local en = default or false
             tog.MouseButton1Click:Connect(function()
-                en = not en; tog.Text = en and "ON" or "OFF"
+                en = not en
+                tog.Text = en and "ON" or "OFF"
                 tog.BackgroundColor3 = en and Color3.fromRGB(50,180,80) or Color3.fromRGB(60,0,0)
                 callback(en)
             end)
             return tog
         end
-        createToggle2("Camera Aimlock (Smooth)", 10,  false, function(state) AimlockEnabled = state end)
-        createToggle2("Silent Aim",              55,  false, function(state) SilentEnabled  = state end)
-        createToggle2("Team Check",              100, true,  function(state) TEAM_CHECK     = state end)
-        createToggle2("Wall Check",              145, true,  function(state) WALL_CHECK     = state end)
+
+        createToggle2("Camera Aimlock (Smooth)", 10, false, function(state)
+            AimlockEnabled = state
+        end)
+        createToggle2("Silent Aim", 55, false, function(state)
+            SilentEnabled = state
+        end)
+        createToggle2("Team Check", 100, true, function(state)
+            TEAM_CHECK = state
+        end)
+        createToggle2("Wall Check", 145, true, function(state)
+            WALL_CHECK = state
+        end)
+
+        -- FOV slider label
         local fovLbl = Instance.new("TextLabel")
         fovLbl.Size = UDim2.new(1, -20, 0, 26); fovLbl.Position = UDim2.new(0, 10, 0, 198)
         fovLbl.BackgroundTransparency = 1; fovLbl.Text = "FOV Radius: " .. tostring(FOV_RADIUS)
         fovLbl.TextColor3 = Color3.fromRGB(255, 160, 160); fovLbl.TextSize = 13
-        fovLbl.Font = Enum.Font.Gotham; fovLbl.TextXAlignment = Enum.TextXAlignment.Left; fovLbl.Parent = content
+        fovLbl.Font = Enum.Font.Gotham; fovLbl.TextXAlignment = Enum.TextXAlignment.Left
+        fovLbl.Parent = content
+
         local function makeAdjBtn(text, posX, posY, fn)
             local b = Instance.new("TextButton")
             b.Size = UDim2.new(0, 40, 0, 28); b.Position = UDim2.new(0, posX, 0, posY)
             b.BackgroundColor3 = Color3.fromRGB(80, 0, 0); b.Text = text
-            b.TextColor3 = Color3.new(1,1,1); b.TextSize = 16; b.Font = Enum.Font.GothamBold; b.Parent = content
+            b.TextColor3 = Color3.new(1,1,1); b.TextSize = 16; b.Font = Enum.Font.GothamBold
+            b.Parent = content
             Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
             b.MouseButton1Click:Connect(fn)
         end
-        makeAdjBtn("-", 10, 228, function() FOV_RADIUS = math.max(50, FOV_RADIUS - 25); fovLbl.Text = "FOV Radius: " .. tostring(FOV_RADIUS); fovCircle.Radius = FOV_RADIUS end)
-        makeAdjBtn("+", 60, 228, function() FOV_RADIUS = math.min(1000, FOV_RADIUS + 25); fovLbl.Text = "FOV Radius: " .. tostring(FOV_RADIUS); fovCircle.Radius = FOV_RADIUS end)
+
+        makeAdjBtn("-", 10, 228, function()
+            FOV_RADIUS = math.max(50, FOV_RADIUS - 25)
+            fovLbl.Text = "FOV Radius: " .. tostring(FOV_RADIUS)
+            fovCircle.Radius = FOV_RADIUS
+        end)
+        makeAdjBtn("+", 60, 228, function()
+            FOV_RADIUS = math.min(1000, FOV_RADIUS + 25)
+            fovLbl.Text = "FOV Radius: " .. tostring(FOV_RADIUS)
+            fovCircle.Radius = FOV_RADIUS
+        end)
+
         local smoothLbl = Instance.new("TextLabel")
         smoothLbl.Size = UDim2.new(1,-20,0,26); smoothLbl.Position = UDim2.new(0,10,0,268)
         smoothLbl.BackgroundTransparency = 1; smoothLbl.Text = "Smoothness: " .. string.format("%.2f", AIMLOCK_SMOOTH)
         smoothLbl.TextColor3 = Color3.fromRGB(255,160,160); smoothLbl.TextSize = 13
-        smoothLbl.Font = Enum.Font.Gotham; smoothLbl.TextXAlignment = Enum.TextXAlignment.Left; smoothLbl.Parent = content
-        makeAdjBtn("-", 10, 298, function() AIMLOCK_SMOOTH = math.max(0.01, AIMLOCK_SMOOTH - 0.05); smoothLbl.Text = "Smoothness: " .. string.format("%.2f", AIMLOCK_SMOOTH) end)
-        makeAdjBtn("+", 60, 298, function() AIMLOCK_SMOOTH = math.min(1, AIMLOCK_SMOOTH + 0.05); smoothLbl.Text = "Smoothness: " .. string.format("%.2f", AIMLOCK_SMOOTH) end)
+        smoothLbl.Font = Enum.Font.Gotham; smoothLbl.TextXAlignment = Enum.TextXAlignment.Left
+        smoothLbl.Parent = content
+
+        makeAdjBtn("-", 10, 298, function()
+            AIMLOCK_SMOOTH = math.max(0.01, AIMLOCK_SMOOTH - 0.05)
+            smoothLbl.Text = "Smoothness: " .. string.format("%.2f", AIMLOCK_SMOOTH)
+        end)
+        makeAdjBtn("+", 60, 298, function()
+            AIMLOCK_SMOOTH = math.min(1, AIMLOCK_SMOOTH + 0.05)
+            smoothLbl.Text = "Smoothness: " .. string.format("%.2f", AIMLOCK_SMOOTH)
+        end)
+
+        -- Closest player finder
         local function getClosest()
             local closest, minDist = nil, FOV_RADIUS
             for _, plr in ipairs(Players2:GetPlayers()) do
@@ -1551,9 +1473,12 @@ makeToggle(combatPage, "Aimlock", 280,
             end
             return closest
         end
+
         local aimConn = RS2.RenderStepped:Connect(function()
             fovCircle.Position = Vector2.new(Mouse2.X, Mouse2.Y + GuiService2:GetGuiInset().Y)
-            if not AimlockEnabled and not SilentEnabled then fovCircle.Visible = false; return end
+            if not AimlockEnabled and not SilentEnabled then
+                fovCircle.Visible = false; return
+            end
             local tgt = getClosest()
             if tgt then
                 fovCircle.Visible = true
@@ -1562,11 +1487,20 @@ makeToggle(combatPage, "Aimlock", 280,
                     local goal = CFrame.new(Cam2.CFrame.Position, tgt.Position)
                     Cam2.CFrame = Cam2.CFrame:Lerp(goal, AIMLOCK_SMOOTH)
                 end
-            else fovCircle.Visible = false end
+            else
+                fovCircle.Visible = false
+            end
         end)
+
+        -- Clean up aimConn when GUI destroyed
         aimGui.AncestryChanged:Connect(function()
-            if not aimGui.Parent then aimConn:Disconnect(); pcall(function() if fovCircle and fovCircle.Remove then fovCircle:Remove() end end) end
+            if not aimGui.Parent then
+                aimConn:Disconnect()
+                pcall(function() fovCircle:Remove() end)
+            end
         end)
+
+        -- Drag
         local dragging2, dragStart2, dragPos2 = false, nil, nil
         titleBar.InputBegan:Connect(function(inp)
             if inp.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1580,6 +1514,8 @@ makeToggle(combatPage, "Aimlock", 280,
                 mainFrame.Position = UDim2.new(dragPos2.X.Scale, dragPos2.X.Offset+d.X, dragPos2.Y.Scale, dragPos2.Y.Offset+d.Y)
             end
         end)
+
+        -- Slide in animation
         TS2:Create(mainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
             { Position = UDim2.new(0.5, -160, 0.5, -190) }):Play()
     end,
@@ -1599,6 +1535,7 @@ tabs["Visual"].page = visualPage
 
 sectionHeader(visualPage, "VISUAL TOOLS", 10)
 
+local espConn = nil
 local espBillboards = {}
 makeToggle(visualPage, "Player ESP", 32,
     function()
@@ -1649,31 +1586,119 @@ makeToggle(visualPage, "Hide GUI", 132,
     function() screenGui.Enabled = true end
 )
 
+-- SAD button — auto types in Roblox chat
 local sadBtn = Instance.new("TextButton")
 sadBtn.Size = UDim2.new(1, -24, 0, 42); sadBtn.Position = UDim2.new(0, 12, 0, 182)
 sadBtn.BackgroundColor3 = BG_CARD; sadBtn.Text = ""; sadBtn.Parent = visualPage
 Instance.new("UICorner", sadBtn).CornerRadius = UDim.new(0, 8)
 local sadStroke = Instance.new("UIStroke", sadBtn)
 sadStroke.Color = RED_STROKE; sadStroke.Thickness = 1; sadStroke.Transparency = 0.55
+
 local sadDot = Instance.new("Frame")
 sadDot.Size = UDim2.new(0, 9, 0, 9); sadDot.Position = UDim2.new(0, 12, 0.5, -4)
 sadDot.BackgroundColor3 = RED_GLOW; sadDot.Parent = sadBtn
 Instance.new("UICorner", sadDot).CornerRadius = UDim.new(1, 0)
+
 local sadLbl = Instance.new("TextLabel")
 sadLbl.Size = UDim2.new(1, -30, 1, 0); sadLbl.Position = UDim2.new(0, 28, 0, 0)
 sadLbl.BackgroundTransparency = 1; sadLbl.Text = "SAD"
-sadLbl.TextColor3 = TXT_MAIN; sadLbl.TextSize = 13; sadLbl.Font = Enum.Font.Gotham
-sadLbl.TextXAlignment = Enum.TextXAlignment.Left; sadLbl.Parent = sadBtn
-sadBtn.MouseEnter:Connect(function() TweenService:Create(sadBtn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play(); TweenService:Create(sadDot, TweenInfo.new(0.12), { BackgroundColor3 = GREEN_LOADED }):Play() end)
-sadBtn.MouseLeave:Connect(function() TweenService:Create(sadBtn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play(); TweenService:Create(sadDot, TweenInfo.new(0.12), { BackgroundColor3 = RED_GLOW }):Play() end)
+sadLbl.TextColor3 = TXT_MAIN; sadLbl.TextSize = 13
+sadLbl.Font = Enum.Font.Gotham; sadLbl.TextXAlignment = Enum.TextXAlignment.Left
+sadLbl.Parent = sadBtn
+
+sadBtn.MouseEnter:Connect(function()
+    TweenService:Create(sadBtn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play()
+    TweenService:Create(sadDot, TweenInfo.new(0.12), { BackgroundColor3 = GREEN_LOADED }):Play()
+end)
+sadBtn.MouseLeave:Connect(function()
+    TweenService:Create(sadBtn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play()
+    TweenService:Create(sadDot, TweenInfo.new(0.12), { BackgroundColor3 = RED_GLOW }):Play()
+end)
+
 sadBtn.MouseButton1Click:Connect(function()
     showNotif("SAD", true)
     task.spawn(function()
-        local ok1, _ = pcall(function() game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SayMessageRequest"):FireServer("Soul V1 Script  in beta version right now", "All") end)
-        if not ok1 then pcall(function() local tcs = game:GetService("TextChatService"); local ch = tcs.TextChannels:FindFirstChild("RBXGeneral") or tcs.TextChannels:FindFirstChildOfClass("TextChannel"); if ch then ch:SendAsync("Soul V1 Script  in beta version right now") end end) end
+        -- Send first message
+        local ok1, err1 = pcall(function()
+            game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+                :FindFirstChild("SayMessageRequest"):FireServer("Soul V1 Script  in beta version right now", "All")
+        end)
+        -- Fallback: use TextChatService (newer games)
+        if not ok1 then
+            pcall(function()
+                local tcs = game:GetService("TextChatService")
+                local channel = tcs.TextChannels:FindFirstChild("RBXGeneral")
+                    or tcs.TextChannels:FindFirstChildOfClass("TextChannel")
+                if channel then channel:SendAsync("Soul V1 Script  in beta version right now") end
+            end)
+        end
+
         task.wait(4)
-        local ok2, _ = pcall(function() game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SayMessageRequest"):FireServer("join our comns  QGrXsqqbDc", "All") end)
-        if not ok2 then pcall(function() local tcs = game:GetService("TextChatService"); local ch = tcs.TextChannels:FindFirstChild("RBXGeneral") or tcs.TextChannels:FindFirstChildOfClass("TextChannel"); if ch then ch:SendAsync("join our comns  QGrXsqqbDc") end end) end
+
+        -- Send second message
+        local ok2, err2 = pcall(function()
+            game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents")
+                :FindFirstChild("SayMessageRequest"):FireServer("join our comns  QGrXsqqbDc", "All")
+        end)
+        if not ok2 then
+            pcall(function()
+                local tcs = game:GetService("TextChatService")
+                local channel = tcs.TextChannels:FindFirstChild("RBXGeneral")
+                    or tcs.TextChannels:FindFirstChildOfClass("TextChannel")
+                if channel then channel:SendAsync("join our comns  QGrXsqqbDc") end
+            end)
+        end
+    end)
+end)
+
+-- Shaders button
+sectionHeader(visualPage, "SHADERS", 236)
+
+local shaderBtn = Instance.new("TextButton")
+shaderBtn.Size = UDim2.new(1, -24, 0, 48); shaderBtn.Position = UDim2.new(0, 12, 0, 258)
+shaderBtn.BackgroundColor3 = BG_CARD; shaderBtn.Text = ""; shaderBtn.Parent = visualPage
+Instance.new("UICorner", shaderBtn).CornerRadius = UDim.new(0, 10)
+local shaderStroke = Instance.new("UIStroke", shaderBtn)
+shaderStroke.Color = RED_STROKE; shaderStroke.Thickness = 1.5; shaderStroke.Transparency = 0.4
+
+local shaderDot = Instance.new("Frame")
+shaderDot.Size = UDim2.new(0, 10, 0, 10); shaderDot.Position = UDim2.new(0, 14, 0.5, -5)
+shaderDot.BackgroundColor3 = RED_GLOW; shaderDot.Parent = shaderBtn
+Instance.new("UICorner", shaderDot).CornerRadius = UDim.new(1, 0)
+
+local shaderLbl = Instance.new("TextLabel")
+shaderLbl.Size = UDim2.new(1, -36, 0, 24); shaderLbl.Position = UDim2.new(0, 32, 0, 6)
+shaderLbl.BackgroundTransparency = 1; shaderLbl.Text = "Shaders"
+shaderLbl.TextColor3 = TXT_WHITE; shaderLbl.TextSize = 15; shaderLbl.Font = Enum.Font.GothamBold
+shaderLbl.TextXAlignment = Enum.TextXAlignment.Left; shaderLbl.Parent = shaderBtn
+
+local shaderSubLbl = Instance.new("TextLabel")
+shaderSubLbl.Size = UDim2.new(1, -36, 0, 16); shaderSubLbl.Position = UDim2.new(0, 32, 1, -18)
+shaderSubLbl.BackgroundTransparency = 1; shaderSubLbl.Text = "Load PShade Ultimate graphics"
+shaderSubLbl.TextColor3 = TXT_DIM; shaderSubLbl.TextSize = 11
+shaderSubLbl.Font = Enum.Font.Gotham; shaderSubLbl.TextXAlignment = Enum.TextXAlignment.Left
+shaderSubLbl.Parent = shaderBtn
+
+shaderBtn.MouseEnter:Connect(function()
+    TweenService:Create(shaderBtn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play()
+    TweenService:Create(shaderDot, TweenInfo.new(0.12), { BackgroundColor3 = GREEN_LOADED }):Play()
+end)
+shaderBtn.MouseLeave:Connect(function()
+    TweenService:Create(shaderBtn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play()
+    TweenService:Create(shaderDot, TweenInfo.new(0.12), { BackgroundColor3 = RED_GLOW }):Play()
+end)
+shaderBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(shaderDot, TweenInfo.new(0.1), { BackgroundColor3 = GREEN_LOADED }):Play()
+    shaderLbl.Text = "Loading Shaders..."
+    shaderLbl.TextColor3 = GREEN_LOADED
+    showNotif("Shaders", true)
+    task.spawn(function()
+        pcall(function()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/randomstring0/pshade-ultimate/refs/heads/main/src/cd.lua'))()
+        end)
+        shaderLbl.Text = "Shaders"
+        shaderLbl.TextColor3 = TXT_WHITE
+        TweenService:Create(shaderDot, TweenInfo.new(0.2), { BackgroundColor3 = RED_GLOW }):Play()
     end)
 end)
 
@@ -1686,90 +1711,128 @@ tabs["Boosts"].page = boostsPage
 
 sectionHeader(boostsPage, "PLAYER BOOSTS", 10)
 
+-- Helper: create a floating popup panel
 local function makeBoostPopup(title, currentVal, minVal, maxVal, defaultVal, applyFn)
     local bGui = Instance.new("ScreenGui")
     bGui.Name="SoulBoostPopup"; bGui.ResetOnSpawn=false
-    bGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling; bGui.DisplayOrder=60; bGui.Parent=gui
+    bGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+    bGui.DisplayOrder=60; bGui.Parent=gui
+
     local bp = Instance.new("Frame")
     bp.Size=UDim2.new(0,300,0,200); bp.Position=UDim2.new(0.5,-150,0.5,-100)
     bp.BackgroundColor3=Color3.fromRGB(18,18,22); bp.BorderSizePixel=0; bp.Parent=bGui
     Instance.new("UICorner", bp).CornerRadius=UDim.new(0,12)
     local bps=Instance.new("UIStroke",bp); bps.Color=Color3.fromRGB(139,0,0); bps.Thickness=1.5
+
     local bHeader=Instance.new("Frame")
     bHeader.Size=UDim2.new(1,0,0,42); bHeader.BackgroundColor3=Color3.fromRGB(10,10,14)
     bHeader.BorderSizePixel=0; bHeader.ZIndex=2; bHeader.Parent=bp
     Instance.new("UICorner",bHeader).CornerRadius=UDim.new(0,12)
+
     local bTitle=Instance.new("TextLabel")
     bTitle.Size=UDim2.new(1,-44,1,0); bTitle.Position=UDim2.new(0,14,0,0)
     bTitle.BackgroundTransparency=1; bTitle.Text=title
     bTitle.TextColor3=TXT_WHITE; bTitle.TextSize=14; bTitle.Font=Enum.Font.GothamBold
     bTitle.TextXAlignment=Enum.TextXAlignment.Left; bTitle.ZIndex=3; bTitle.Parent=bHeader
+
     local bClose=Instance.new("TextButton")
     bClose.Size=UDim2.new(0,26,0,26); bClose.Position=UDim2.new(1,-32,0.5,-13)
-    bClose.BackgroundColor3=Color3.fromRGB(80,0,0); bClose.Text="x"
+    bClose.BackgroundColor3=Color3.fromRGB(80,0,0); bClose.Text="✕"
     bClose.TextColor3=TXT_WHITE; bClose.TextSize=13; bClose.Font=Enum.Font.GothamBold
     bClose.ZIndex=3; bClose.Parent=bHeader
     Instance.new("UICorner",bClose).CornerRadius=UDim.new(0,6)
     bClose.MouseButton1Click:Connect(function() bGui:Destroy() end)
+
+    -- Current value display
     local valLbl=Instance.new("TextLabel")
     valLbl.Size=UDim2.new(1,-24,0,28); valLbl.Position=UDim2.new(0,12,0,52)
     valLbl.BackgroundTransparency=1; valLbl.Text="Value: "..tostring(currentVal)
     valLbl.TextColor3=TXT_MAIN; valLbl.TextSize=14; valLbl.Font=Enum.Font.GothamBold
     valLbl.TextXAlignment=Enum.TextXAlignment.Center; valLbl.ZIndex=2; valLbl.Parent=bp
+
+    -- Slider bar bg
     local sliderBg=Instance.new("Frame")
     sliderBg.Size=UDim2.new(1,-40,0,10); sliderBg.Position=UDim2.new(0,20,0,90)
     sliderBg.BackgroundColor3=Color3.fromRGB(40,40,50); sliderBg.BorderSizePixel=0; sliderBg.ZIndex=2; sliderBg.Parent=bp
     Instance.new("UICorner",sliderBg).CornerRadius=UDim.new(1,0)
-    local initPct=(currentVal-minVal)/(maxVal-minVal)
+
     local sliderFill=Instance.new("Frame")
+    local initPct = (currentVal - minVal) / (maxVal - minVal)
     sliderFill.Size=UDim2.new(initPct,0,1,0); sliderFill.BackgroundColor3=RED_GLOW
     sliderFill.BorderSizePixel=0; sliderFill.ZIndex=3; sliderFill.Parent=sliderBg
     Instance.new("UICorner",sliderFill).CornerRadius=UDim.new(1,0)
+
     local sliderKnob=Instance.new("Frame")
     sliderKnob.Size=UDim2.new(0,18,0,18); sliderKnob.BackgroundColor3=TXT_WHITE
     sliderKnob.Position=UDim2.new(initPct,-9,0.5,-9); sliderKnob.ZIndex=4; sliderKnob.Parent=sliderBg
     Instance.new("UICorner",sliderKnob).CornerRadius=UDim.new(1,0)
-    local draggingSlider=false
-    sliderKnob.InputBegan:Connect(function(inp) if inp.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=true end end)
-    sliderBg.InputBegan:Connect(function(inp) if inp.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=true end end)
-    UserInputService.InputEnded:Connect(function(inp) if inp.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=false end end)
+
+    local draggingSlider = false
+    sliderKnob.InputBegan:Connect(function(inp)
+        if inp.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=true end
+    end)
+    sliderBg.InputBegan:Connect(function(inp)
+        if inp.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=true end
+    end)
+    UserInputService.InputEnded:Connect(function(inp)
+        if inp.UserInputType==Enum.UserInputType.MouseButton1 then draggingSlider=false end
+    end)
     UserInputService.InputChanged:Connect(function(inp)
         if draggingSlider and inp.UserInputType==Enum.UserInputType.MouseMovement then
-            local rel=math.clamp((inp.Position.X-sliderBg.AbsolutePosition.X)/sliderBg.AbsoluteSize.X,0,1)
-            local val=math.floor(minVal+rel*(maxVal-minVal))
-            sliderFill.Size=UDim2.new(rel,0,1,0); sliderKnob.Position=UDim2.new(rel,-9,0.5,-9)
-            valLbl.Text="Value: "..tostring(val); pcall(function() applyFn(val) end)
+            local sliderAbs = sliderBg.AbsolutePosition
+            local sliderW   = sliderBg.AbsoluteSize.X
+            local rel = math.clamp((inp.Position.X - sliderAbs.X) / sliderW, 0, 1)
+            local val = math.floor(minVal + rel * (maxVal - minVal))
+            sliderFill.Size = UDim2.new(rel, 0, 1, 0)
+            sliderKnob.Position = UDim2.new(rel, -9, 0.5, -9)
+            valLbl.Text = "Value: " .. tostring(val)
+            pcall(function() applyFn(val) end)
         end
     end)
-    local presets={{"Default",defaultVal},{"Fast",math.floor(maxVal*0.4)},{"Max",maxVal}}
-    for i,pr in ipairs(presets) do
-        local pb=Instance.new("TextButton")
-        pb.Size=UDim2.new(0,80,0,32); pb.Position=UDim2.new(0,12+(i-1)*90,0,118)
-        pb.BackgroundColor3=BG_CARD; pb.Text=pr[1]; pb.TextColor3=TXT_MAIN; pb.TextSize=13; pb.Font=Enum.Font.Gotham
+
+    -- Quick preset buttons
+    local presets = {
+        { "Default", defaultVal },
+        { "Fast",    math.floor(maxVal * 0.4) },
+        { "Max",     maxVal },
+    }
+    for i, pr in ipairs(presets) do
+        local pb = Instance.new("TextButton")
+        pb.Size=UDim2.new(0,80,0,32); pb.Position=UDim2.new(0, 12+(i-1)*90, 0, 118)
+        pb.BackgroundColor3=BG_CARD; pb.Text=pr[1]
+        pb.TextColor3=TXT_MAIN; pb.TextSize=13; pb.Font=Enum.Font.Gotham
         pb.ZIndex=2; pb.Parent=bp
         Instance.new("UICorner",pb).CornerRadius=UDim.new(0,8)
-        local pv=pr[2]
+        local pv = pr[2]
         pb.MouseButton1Click:Connect(function()
-            local rel2=math.clamp((pv-minVal)/(maxVal-minVal),0,1)
-            sliderFill.Size=UDim2.new(rel2,0,1,0); sliderKnob.Position=UDim2.new(rel2,-9,0.5,-9)
-            valLbl.Text="Value: "..tostring(pv); pcall(function() applyFn(pv) end)
+            local rel2 = math.clamp((pv-minVal)/(maxVal-minVal),0,1)
+            sliderFill.Size=UDim2.new(rel2,0,1,0)
+            sliderKnob.Position=UDim2.new(rel2,-9,0.5,-9)
+            valLbl.Text="Value: "..tostring(pv)
+            pcall(function() applyFn(pv) end)
         end)
         pb.MouseEnter:Connect(function() TweenService:Create(pb,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
         pb.MouseLeave:Connect(function() TweenService:Create(pb,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
     end
+
+    -- Reset button
     local resetBtn=Instance.new("TextButton")
     resetBtn.Size=UDim2.new(1,-24,0,36); resetBtn.Position=UDim2.new(0,12,0,158)
-    resetBtn.BackgroundColor3=Color3.fromRGB(60,0,0); resetBtn.Text="  Reset to Default ("..tostring(defaultVal)..")"
+    resetBtn.BackgroundColor3=Color3.fromRGB(60,0,0); resetBtn.Text="↺  Reset to Default ("..tostring(defaultVal)..")"
     resetBtn.TextColor3=TXT_WHITE; resetBtn.TextSize=13; resetBtn.Font=Enum.Font.GothamSemibold
     resetBtn.ZIndex=2; resetBtn.Parent=bp
     Instance.new("UICorner",resetBtn).CornerRadius=UDim.new(0,8)
     resetBtn.MouseButton1Click:Connect(function()
         local rel3=(defaultVal-minVal)/(maxVal-minVal)
-        sliderFill.Size=UDim2.new(rel3,0,1,0); sliderKnob.Position=UDim2.new(rel3,-9,0.5,-9)
-        valLbl.Text="Value: "..tostring(defaultVal); pcall(function() applyFn(defaultVal) end)
+        sliderFill.Size=UDim2.new(rel3,0,1,0)
+        sliderKnob.Position=UDim2.new(rel3,-9,0.5,-9)
+        valLbl.Text="Value: "..tostring(defaultVal)
+        pcall(function() applyFn(defaultVal) end)
     end)
     resetBtn.MouseEnter:Connect(function() TweenService:Create(resetBtn,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
     resetBtn.MouseLeave:Connect(function() TweenService:Create(resetBtn,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
+
+    -- Draggable
     local bdragging,bdragStart,bdragPos=false,nil,nil
     bHeader.InputBegan:Connect(function(inp)
         if inp.UserInputType==Enum.UserInputType.MouseButton1 then
@@ -1785,6 +1848,7 @@ local function makeBoostPopup(title, currentVal, minVal, maxVal, defaultVal, app
     end)
 end
 
+-- Speed button
 local speedPopup = nil
 local speedBtn = Instance.new("TextButton")
 speedBtn.Size=UDim2.new(0.5,-16,0,42); speedBtn.Position=UDim2.new(0,12,0,32)
@@ -1795,21 +1859,23 @@ local speedDot=Instance.new("Frame"); speedDot.Size=UDim2.new(0,9,0,9); speedDot
 speedDot.BackgroundColor3=RED_GLOW; speedDot.Parent=speedBtn
 Instance.new("UICorner",speedDot).CornerRadius=UDim.new(1,0)
 local speedLbl=Instance.new("TextLabel"); speedLbl.Size=UDim2.new(1,-28,1,0); speedLbl.Position=UDim2.new(0,24,0,0)
-speedLbl.BackgroundTransparency=1; speedLbl.Text=" Player Speed"
+speedLbl.BackgroundTransparency=1; speedLbl.Text="⚡ Player Speed"
 speedLbl.TextColor3=TXT_MAIN; speedLbl.TextSize=13; speedLbl.Font=Enum.Font.Gotham
 speedLbl.TextXAlignment=Enum.TextXAlignment.Left; speedLbl.Parent=speedBtn
 speedBtn.MouseEnter:Connect(function() TweenService:Create(speedBtn,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
 speedBtn.MouseLeave:Connect(function() TweenService:Create(speedBtn,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
 speedBtn.MouseButton1Click:Connect(function()
     if speedPopup and speedPopup.Parent then speedPopup:Destroy(); return end
-    local hum=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    local cur=hum and hum.WalkSpeed or 16
-    makeBoostPopup(" Player Speed", cur, 1, 300, 16, function(v)
-        local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h.WalkSpeed=v end
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    local cur = hum and hum.WalkSpeed or 16
+    makeBoostPopup("⚡ Player Speed", cur, 1, 300, 16, function(v)
+        local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if h then h.WalkSpeed = v end
     end)
-    speedPopup=gui:FindFirstChild("SoulBoostPopup")
+    speedPopup = gui:FindFirstChild("SoulBoostPopup")
 end)
 
+-- Jump button
 local jumpPopup = nil
 local jumpBtn = Instance.new("TextButton")
 jumpBtn.Size=UDim2.new(0.5,-16,0,42); jumpBtn.Position=UDim2.new(0.5,4,0,32)
@@ -1820,20 +1886,26 @@ local jumpDot=Instance.new("Frame"); jumpDot.Size=UDim2.new(0,9,0,9); jumpDot.Po
 jumpDot.BackgroundColor3=RED_GLOW; jumpDot.Parent=jumpBtn
 Instance.new("UICorner",jumpDot).CornerRadius=UDim.new(1,0)
 local jumpLbl=Instance.new("TextLabel"); jumpLbl.Size=UDim2.new(1,-28,1,0); jumpLbl.Position=UDim2.new(0,24,0,0)
-jumpLbl.BackgroundTransparency=1; jumpLbl.Text=" Jump Power"
+jumpLbl.BackgroundTransparency=1; jumpLbl.Text="🦘 Jump Power"
 jumpLbl.TextColor3=TXT_MAIN; jumpLbl.TextSize=13; jumpLbl.Font=Enum.Font.Gotham
 jumpLbl.TextXAlignment=Enum.TextXAlignment.Left; jumpLbl.Parent=jumpBtn
 jumpBtn.MouseEnter:Connect(function() TweenService:Create(jumpBtn,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
 jumpBtn.MouseLeave:Connect(function() TweenService:Create(jumpBtn,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
 jumpBtn.MouseButton1Click:Connect(function()
     if jumpPopup and jumpPopup.Parent then jumpPopup:Destroy(); return end
-    local hum=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    local cur=hum and hum.JumpPower or 50
-    makeBoostPopup(" Jump Power", cur, 1, 500, 50, function(v)
-        local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if h then pcall(function() h.UseJumpPower=true end); pcall(function() h.JumpPower=v end); pcall(function() h.JumpHeight=(v*v)/196 end) end
+    local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    local cur = hum and hum.JumpPower or 50
+    makeBoostPopup("🦘 Jump Power", cur, 1, 500, 50, function(v)
+        local h = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if h then
+            -- Support both old JumpPower and new JumpHeight API
+            pcall(function() h.UseJumpPower = true end)
+            pcall(function() h.JumpPower = v end)
+            -- Also set JumpHeight for games using new system (JumpHeight ≈ JumpPower²/196)
+            pcall(function() h.JumpHeight = (v * v) / 196 end)
+        end
     end)
-    jumpPopup=gui:FindFirstChild("SoulBoostPopup")
+    jumpPopup = gui:FindFirstChild("SoulBoostPopup")
 end)
 
 boostsTabBtn.MouseButton1Click:Connect(function() switchTab("Boosts") end)
@@ -1844,60 +1916,76 @@ miscTabBtn.Visible = false
 local miscPage = createPage()
 tabs["Misc"].page = miscPage
 
+-- MOVEMENT & PHYSICS section
 sectionHeader(miscPage, "MOVEMENT & PHYSICS", 10)
 
+local flyConn, flyBV, flyBG = nil, nil, nil
 local flySpeed = 60
+local flyAnimTrack = nil
 local flySpeedGui = nil
+
+local SUPERMAN_ANIM_ID = "rbxassetid://13964536279"
 
 local function openFlySpeedGui()
     if flySpeedGui and flySpeedGui.Parent then flySpeedGui:Destroy(); return end
     flySpeedGui = Instance.new("ScreenGui")
     flySpeedGui.Name = "SoulFlySpeed"; flySpeedGui.ResetOnSpawn = false
-    flySpeedGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; flySpeedGui.DisplayOrder = 55; flySpeedGui.Parent = gui
+    flySpeedGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    flySpeedGui.DisplayOrder = 55; flySpeedGui.Parent = gui
+
     local fp = Instance.new("Frame")
     fp.Size = UDim2.new(0,300,0,190); fp.Position = UDim2.new(0.5,-150,0.5,-95)
     fp.BackgroundColor3 = Color3.fromRGB(18,18,22); fp.BorderSizePixel=0; fp.Parent=flySpeedGui
     Instance.new("UICorner",fp).CornerRadius=UDim.new(0,12)
     local fps2=Instance.new("UIStroke",fp); fps2.Color=Color3.fromRGB(139,0,0); fps2.Thickness=1.5
+
     local fh=Instance.new("Frame")
     fh.Size=UDim2.new(1,0,0,52); fh.BackgroundColor3=Color3.fromRGB(10,10,14)
     fh.BorderSizePixel=0; fh.ZIndex=2; fh.Parent=fp
     Instance.new("UICorner",fh).CornerRadius=UDim.new(0,12)
+
     local ftitle=Instance.new("TextLabel")
     ftitle.Size=UDim2.new(1,-44,0,26); ftitle.Position=UDim2.new(0,14,0,4)
-    ftitle.BackgroundTransparency=1; ftitle.Text=" Soul's Superman Fly"
+    ftitle.BackgroundTransparency=1; ftitle.Text="🦸 Soul's Superman Fly"
     ftitle.TextColor3=TXT_WHITE; ftitle.TextSize=14; ftitle.Font=Enum.Font.GothamBold
     ftitle.TextXAlignment=Enum.TextXAlignment.Left; ftitle.ZIndex=3; ftitle.Parent=fh
+
     local fsubtitle=Instance.new("TextLabel")
     fsubtitle.Size=UDim2.new(1,-44,0,16); fsubtitle.Position=UDim2.new(0,14,0,30)
     fsubtitle.BackgroundTransparency=1; fsubtitle.Text="Made by Soul"
     fsubtitle.TextColor3=Color3.fromRGB(160,70,70); fsubtitle.TextSize=11; fsubtitle.Font=Enum.Font.Gotham
     fsubtitle.TextXAlignment=Enum.TextXAlignment.Left; fsubtitle.ZIndex=3; fsubtitle.Parent=fh
+
     local fclose=Instance.new("TextButton")
     fclose.Size=UDim2.new(0,26,0,26); fclose.Position=UDim2.new(1,-32,0.5,-13)
-    fclose.BackgroundColor3=Color3.fromRGB(80,0,0); fclose.Text="x"
+    fclose.BackgroundColor3=Color3.fromRGB(80,0,0); fclose.Text="✕"
     fclose.TextColor3=TXT_WHITE; fclose.TextSize=13; fclose.Font=Enum.Font.GothamBold
     fclose.ZIndex=3; fclose.Parent=fh
     Instance.new("UICorner",fclose).CornerRadius=UDim.new(0,6)
     fclose.MouseButton1Click:Connect(function() flySpeedGui:Destroy() end)
+
     local fValLbl=Instance.new("TextLabel")
     fValLbl.Size=UDim2.new(1,-24,0,26); fValLbl.Position=UDim2.new(0,12,0,62)
     fValLbl.BackgroundTransparency=1; fValLbl.Text="Speed: "..tostring(flySpeed)
     fValLbl.TextColor3=TXT_MAIN; fValLbl.TextSize=14; fValLbl.Font=Enum.Font.GothamBold
     fValLbl.TextXAlignment=Enum.TextXAlignment.Center; fValLbl.ZIndex=2; fValLbl.Parent=fp
+
     local fSliderBg=Instance.new("Frame")
     fSliderBg.Size=UDim2.new(1,-40,0,10); fSliderBg.Position=UDim2.new(0,20,0,88)
     fSliderBg.BackgroundColor3=Color3.fromRGB(40,40,50); fSliderBg.BorderSizePixel=0; fSliderBg.ZIndex=2; fSliderBg.Parent=fp
     Instance.new("UICorner",fSliderBg).CornerRadius=UDim.new(1,0)
+
     local pct0=(flySpeed-10)/(300-10)
     local fFill=Instance.new("Frame")
     fFill.Size=UDim2.new(pct0,0,1,0); fFill.BackgroundColor3=RED_GLOW
     fFill.BorderSizePixel=0; fFill.ZIndex=3; fFill.Parent=fSliderBg
     Instance.new("UICorner",fFill).CornerRadius=UDim.new(1,0)
+
     local fKnob=Instance.new("Frame")
     fKnob.Size=UDim2.new(0,18,0,18); fKnob.BackgroundColor3=TXT_WHITE
     fKnob.Position=UDim2.new(pct0,-9,0.5,-9); fKnob.ZIndex=4; fKnob.Parent=fSliderBg
     Instance.new("UICorner",fKnob).CornerRadius=UDim.new(1,0)
+
     local fDrag=false
     fKnob.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then fDrag=true end end)
     fSliderBg.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then fDrag=true end end)
@@ -1910,33 +1998,41 @@ local function openFlySpeedGui()
             fValLbl.Text="Speed: "..tostring(flySpeed)
         end
     end)
+
     local presets={{"Slow",20},{"Normal",60},{"Fast",150},{"Max",300}}
     for i,pr in ipairs(presets) do
         local pb=Instance.new("TextButton")
         pb.Size=UDim2.new(0,64,0,30); pb.Position=UDim2.new(0,12+(i-1)*68,0,110)
-        pb.BackgroundColor3=BG_CARD; pb.Text=pr[1]; pb.TextColor3=TXT_MAIN; pb.TextSize=11; pb.Font=Enum.Font.Gotham
+        pb.BackgroundColor3=BG_CARD; pb.Text=pr[1]
+        pb.TextColor3=TXT_MAIN; pb.TextSize=11; pb.Font=Enum.Font.Gotham
         pb.ZIndex=2; pb.Parent=fp
         Instance.new("UICorner",pb).CornerRadius=UDim.new(0,8)
         local pv=pr[2]
         pb.MouseButton1Click:Connect(function()
-            flySpeed=pv; local r=(pv-10)/(300-10)
-            fFill.Size=UDim2.new(r,0,1,0); fKnob.Position=UDim2.new(r,-9,0.5,-9); fValLbl.Text="Speed: "..tostring(pv)
+            flySpeed=pv
+            local r=(pv-10)/(300-10)
+            fFill.Size=UDim2.new(r,0,1,0); fKnob.Position=UDim2.new(r,-9,0.5,-9)
+            fValLbl.Text="Speed: "..tostring(pv)
         end)
         pb.MouseEnter:Connect(function() TweenService:Create(pb,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
         pb.MouseLeave:Connect(function() TweenService:Create(pb,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
     end
+
     local resetF=Instance.new("TextButton")
     resetF.Size=UDim2.new(1,-24,0,34); resetF.Position=UDim2.new(0,12,0,148)
-    resetF.BackgroundColor3=Color3.fromRGB(60,0,0); resetF.Text="  Reset to Default (60)"
+    resetF.BackgroundColor3=Color3.fromRGB(60,0,0); resetF.Text="↺  Reset to Default (60)"
     resetF.TextColor3=TXT_WHITE; resetF.TextSize=13; resetF.Font=Enum.Font.GothamSemibold
     resetF.ZIndex=2; resetF.Parent=fp
     Instance.new("UICorner",resetF).CornerRadius=UDim.new(0,8)
     resetF.MouseButton1Click:Connect(function()
-        flySpeed=60; local r=(60-10)/(300-10)
-        fFill.Size=UDim2.new(r,0,1,0); fKnob.Position=UDim2.new(r,-9,0.5,-9); fValLbl.Text="Speed: 60"
+        flySpeed=60
+        local r=(60-10)/(300-10)
+        fFill.Size=UDim2.new(r,0,1,0); fKnob.Position=UDim2.new(r,-9,0.5,-9)
+        fValLbl.Text="Speed: 60"
     end)
     resetF.MouseEnter:Connect(function() TweenService:Create(resetF,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
     resetF.MouseLeave:Connect(function() TweenService:Create(resetF,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
+
     local fd,fds,fdp=false,nil,nil
     fh.InputBegan:Connect(function(i)
         if i.UserInputType==Enum.UserInputType.MouseButton1 then
@@ -1954,95 +2050,274 @@ end
 
 makeToggle(miscPage, "Superman Fly", 32,
     function()
+        -- Listen for the new GUI the INSTANT it's added to PlayerGui
         local patchConn
         patchConn = player.PlayerGui.ChildAdded:Connect(function(g)
             if not g:IsA("ScreenGui") then return end
-            task.wait(0.15); patchConn:Disconnect()
-            local T = {{"rapiariep Menu","Soul's Superman Gui"},{"rapiariep","Soul"},{"Sistem","System"},{"Gn Atin","Settings"},{"Teleport Pemain","Player Teleport"},{"Iseng","Extras"},{"Terbang Superman","Superman Fly"},{"Kecepatan Superman","Fly Speed"},{"Kecepatan Lari","Sprint Speed"},{"Tembus Tembok","No Clip"},{"Tukang Lompat","Infinite Jump"},{"Tampilkan Koordinat","Show Coordinates"},{"Safe Landing","Safe Landing"},{"Lari","Sprint"},{"Pilih Pemain","Select Player"},{"Teleport ke Pemain","Teleport to Player"},{"Teleport ke Saya","Teleport to Me"},{"Ikuti Pemain","Follow Player"},{"Berhenti Ikuti","Stop Following"},{"Semua Pemain","All Players"},{"Buat Bola","Spawn Ball"},{"Buat Kotak","Spawn Box"},{"Hapus Semua","Remove All"},{"Ledakkan","Explode"},{"Lempar","Fling"},{"Injak Kepala","Head Sit"},{"Ikut Punggung","Backpack Mode"},{"Jatuhkan","Drop"},{"Ganggu","Annoy"},{"Bahasa","Language"},{"Indonesia","English"},{"Simpan","Save"},{"Aktif","Active"},{"Nonaktif","Inactive"},{"Nyala","On"},{"Mati","Off"},{"Tombol","Button"},{"tombol","button"},{"Pemain","Player"},{"Kecepatan","Speed"},{"Terbang","Fly"},{"Koordinat","Coordinates"},{"Berhenti","Stop"},{"Mulai","Start"},{"Keluar","Close"},{"Tutup","Close"},{"Cari","Search"},{"Ya","Yes"},{"Tidak","No"},{"Semua","All"},{"Saya","Me"}}
-            local P_BG=Color3.fromRGB(18,5,30); local P_PANEL=Color3.fromRGB(28,10,48); local P_CARD=Color3.fromRGB(40,14,68); local P_BTN=Color3.fromRGB(90,0,170); local P_ACCENT=Color3.fromRGB(150,0,255); local P_BRIGHT=Color3.fromRGB(190,90,255); local P_TEXT=Color3.fromRGB(225,185,255); local P_DIM=Color3.fromRGB(155,105,205); local CRIMSON=Color3.fromRGB(139,0,0); local WHITE=Color3.new(1,1,1)
-            for _,d in ipairs(g:GetDescendants()) do
+            -- Give it a moment to fully build its children
+            task.wait(0.15)
+            patchConn:Disconnect()
+
+            local T = {
+                {"rapiariep Menu",      "Soul's Superman Gui"},
+                {"rapiariep",           "Soul"},
+                {"Sistem",              "System"},
+                {"Gn Atin",             "Settings"},
+                {"Teleport Pemain",     "Player Teleport"},
+                {"Iseng",               "Extras"},
+                {"Terbang Superman",    "Superman Fly"},
+                {"Kecepatan Superman",  "Fly Speed"},
+                {"Kecepatan Lari",      "Sprint Speed"},
+                {"Tembus Tembok",       "No Clip"},
+                {"Tukang Lompat",       "Infinite Jump"},
+                {"Tampilkan Koordinat", "Show Coordinates"},
+                {"Safe Landing",        "Safe Landing"},
+                {"Lari",                "Sprint"},
+                {"Pilih Pemain",        "Select Player"},
+                {"Teleport ke Pemain",  "Teleport to Player"},
+                {"Teleport ke Saya",    "Teleport to Me"},
+                {"Ikuti Pemain",        "Follow Player"},
+                {"Berhenti Ikuti",      "Stop Following"},
+                {"Semua Pemain",        "All Players"},
+                {"Buat Bola",           "Spawn Ball"},
+                {"Buat Kotak",          "Spawn Box"},
+                {"Hapus Semua",         "Remove All"},
+                {"Ledakkan",            "Explode"},
+                {"Lempar",              "Fling"},
+                {"Injak Kepala",        "Head Sit"},
+                {"Ikut Punggung",       "Backpack Mode"},
+                {"Jatuhkan",            "Drop"},
+                {"Ganggu",              "Annoy"},
+                {"Bahasa",              "Language"},
+                {"Indonesia",           "English"},
+                {"Simpan",              "Save"},
+                {"Aktif",               "Active"},
+                {"Nonaktif",            "Inactive"},
+                {"Nyala",               "On"},
+                {"Mati",                "Off"},
+                {"Tombol",              "Button"},
+                {"tombol",              "button"},
+                {"Pemain",              "Player"},
+                {"Kecepatan",           "Speed"},
+                {"Terbang",             "Fly"},
+                {"Koordinat",           "Coordinates"},
+                {"Berhenti",            "Stop"},
+                {"Mulai",               "Start"},
+                {"Keluar",              "Close"},
+                {"Tutup",               "Close"},
+                {"Cari",                "Search"},
+                {"Ya",                  "Yes"},
+                {"Tidak",               "No"},
+                {"Semua",               "All"},
+                {"Saya",                "Me"},
+            }
+
+            -- Purple + crimson red palette
+            local P_BG     = Color3.fromRGB(18,  5,  30)
+            local P_PANEL  = Color3.fromRGB(28, 10,  48)
+            local P_CARD   = Color3.fromRGB(40, 14,  68)
+            local P_BTN    = Color3.fromRGB(90,  0, 170)
+            local P_ACCENT = Color3.fromRGB(150,  0, 255)
+            local P_BRIGHT = Color3.fromRGB(190, 90, 255)
+            local P_TEXT   = Color3.fromRGB(225, 185, 255)
+            local P_DIM    = Color3.fromRGB(155, 105, 205)
+            local CRIMSON  = Color3.fromRGB(139,  0,   0)
+            local WHITE    = Color3.new(1, 1, 1)
+
+            -- Translate text
+            for _, d in ipairs(g:GetDescendants()) do
                 if d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
-                    pcall(function() for _,pair in ipairs(T) do d.Text=d.Text:gsub(pair[1],pair[2]) end end)
+                    pcall(function()
+                        for _, pair in ipairs(T) do
+                            d.Text = d.Text:gsub(pair[1], pair[2])
+                        end
+                    end)
                 end
             end
+
+            -- Also catch any text added AFTER (e.g. dynamic labels)
             g.DescendantAdded:Connect(function(d)
                 if d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
-                    task.wait(0.05); pcall(function() for _,pair in ipairs(T) do d.Text=d.Text:gsub(pair[1],pair[2]) end end)
+                    task.wait(0.05)
+                    pcall(function()
+                        for _, pair in ipairs(T) do
+                            d.Text = d.Text:gsub(pair[1], pair[2])
+                        end
+                    end)
                 end
             end)
-            for _,d in ipairs(g:GetDescendants()) do
+
+            -- Theme everything purple/crimson
+            for _, d in ipairs(g:GetDescendants()) do
                 pcall(function()
                     if d:IsA("Frame") or d:IsA("ScrollingFrame") then
-                        if d.BackgroundTransparency>=1 then return end
-                        local r=d.BackgroundColor3.R*255; local gr=d.BackgroundColor3.G*255; local b=d.BackgroundColor3.B*255
-                        if r<45 and gr<45 and b<45 then d.BackgroundColor3=P_BG elseif r<75 then d.BackgroundColor3=P_PANEL else d.BackgroundColor3=P_CARD end
+                        if d.BackgroundTransparency >= 1 then return end
+                        local r = d.BackgroundColor3.R * 255
+                        local gr = d.BackgroundColor3.G * 255
+                        local b = d.BackgroundColor3.B * 255
+                        if r < 45 and gr < 45 and b < 45 then
+                            d.BackgroundColor3 = P_BG
+                        elseif r < 75 then
+                            d.BackgroundColor3 = P_PANEL
+                        else
+                            d.BackgroundColor3 = P_CARD
+                        end
                     elseif d:IsA("TextButton") then
-                        if d.BackgroundTransparency<1 then local r=d.BackgroundColor3.R*255; d.BackgroundColor3=(r>50) and CRIMSON or P_BTN end
-                        d.TextColor3=WHITE; d.Font=Enum.Font.GothamSemibold
-                    elseif d:IsA("TextLabel") then d.TextColor3=P_TEXT
-                    elseif d:IsA("TextBox") then if d.BackgroundTransparency<1 then d.BackgroundColor3=P_PANEL end; d.TextColor3=WHITE; d.PlaceholderColor3=P_DIM
-                    elseif d:IsA("UIStroke") then d.Color=P_ACCENT
-                    elseif d:IsA("ImageLabel") or d:IsA("ImageButton") then d.ImageColor3=P_BRIGHT
-                    elseif d:IsA("ScrollingFrame") then d.ScrollBarImageColor3=P_ACCENT end
+                        if d.BackgroundTransparency < 1 then
+                            -- Active/toggled buttons → crimson, inactive → purple
+                            local r = d.BackgroundColor3.R * 255
+                            d.BackgroundColor3 = (r > 50) and CRIMSON or P_BTN
+                        end
+                        d.TextColor3 = WHITE
+                        d.Font = Enum.Font.GothamSemibold
+                    elseif d:IsA("TextLabel") then
+                        d.TextColor3 = P_TEXT
+                    elseif d:IsA("TextBox") then
+                        if d.BackgroundTransparency < 1 then
+                            d.BackgroundColor3 = P_PANEL
+                        end
+                        d.TextColor3 = WHITE
+                        d.PlaceholderColor3 = P_DIM
+                    elseif d:IsA("UIStroke") then
+                        d.Color = P_ACCENT
+                    elseif d:IsA("ImageLabel") or d:IsA("ImageButton") then
+                        d.ImageColor3 = P_BRIGHT
+                    elseif d:IsA("ScrollingFrame") then
+                        d.ScrollBarImageColor3 = P_ACCENT
+                    end
                 end)
             end
         end)
-        pcall(function() loadstring(game:HttpGet("https://pastebin.com/raw/uxGd6Y83"))() end)
+
+        -- Load the fly script AFTER the listener is connected
+        pcall(function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/uxGd6Y83"))()
+        end)
     end,
     function()
-        local SOUL_GUIS={"SoulV1","SoulKeySystem","SoulJerkCredit","SoulAutoClick","SoulAnimChanger","SoulFlySpeed","SoulBoostPopup","SoulShaders"}
-        for _,g in ipairs(player.PlayerGui:GetChildren()) do
+        -- Destroy the external GUI on toggle off
+        local SOUL_GUIS = {
+            "SoulV1","SoulKeySystem","SoulJerkCredit",
+            "SoulAutoClick","SoulAnimChanger","SoulFlySpeed","SoulBoostPopup","SoulShaders"
+        }
+        for _, g in ipairs(player.PlayerGui:GetChildren()) do
             if g:IsA("ScreenGui") then
-                local isSoul=false; for _,n in ipairs(SOUL_GUIS) do if g.Name==n then isSoul=true; break end end
+                local isSoul = false
+                for _, n in ipairs(SOUL_GUIS) do if g.Name == n then isSoul = true; break end end
                 if not isSoul then pcall(function() g:Destroy() end) end
             end
         end
-        local hum=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if hum then hum.PlatformStand=false end
+        local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.PlatformStand = false end
     end
 )
 
 makeToggle(miscPage, "Infinite Baseplate", 82,
     function()
+        -- Hook ChildAdded BEFORE loadstring so we catch the GUI instantly
         local bpConn
         bpConn = player.PlayerGui.ChildAdded:Connect(function(g)
             if not g:IsA("ScreenGui") then return end
-            task.wait(0.15); bpConn:Disconnect()
-            local RED_BG=Color3.fromRGB(20,2,2); local RED_PANEL=Color3.fromRGB(35,4,4); local RED_CARD=Color3.fromRGB(55,6,6); local RED_BTN=Color3.fromRGB(139,0,0); local RED_BRIGHT2=Color3.fromRGB(200,10,10); local RED_ACCENT2=Color3.fromRGB(160,0,0); local RED_TEXT=Color3.fromRGB(255,180,180); local RED_DIM=Color3.fromRGB(200,100,100); local WHITE=Color3.new(1,1,1)
-            local T={{"EmptyTools","SOUL Tools"},{"Empty Tools","SOUL Tools"},{"emptytools","SOUL Tools"},{"empty tools","SOUL Tools"},{"LikelySmith","Soul"},{"likelysmith","Soul"},{"Made by","Made by Soul"}}
-            for _,d in ipairs(g:GetDescendants()) do
+            task.wait(0.15)
+            bpConn:Disconnect()
+
+            local RED_BG     = Color3.fromRGB(20,  2,  2)
+            local RED_PANEL  = Color3.fromRGB(35,  4,  4)
+            local RED_CARD   = Color3.fromRGB(55,  6,  6)
+            local RED_BTN    = Color3.fromRGB(139,  0,  0)
+            local RED_BRIGHT = Color3.fromRGB(200, 10, 10)
+            local RED_ACCENT = Color3.fromRGB(160,  0,  0)
+            local RED_TEXT   = Color3.fromRGB(255, 180, 180)
+            local RED_DIM    = Color3.fromRGB(200, 100, 100)
+            local WHITE      = Color3.new(1, 1, 1)
+
+            -- Rebrand + translate
+            local T = {
+                {"EmptyTools",   "SOUL Tools"},
+                {"Empty Tools",  "SOUL Tools"},
+                {"emptytools",   "SOUL Tools"},
+                {"empty tools",  "SOUL Tools"},
+                {"LikelySmith",  "Soul"},
+                {"likelysmith",  "Soul"},
+                {"Made by",      "Made by Soul"},
+            }
+
+            for _, d in ipairs(g:GetDescendants()) do
                 if d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
-                    pcall(function() for _,pair in ipairs(T) do d.Text=d.Text:gsub(pair[1],pair[2]) end end)
+                    pcall(function()
+                        for _, pair in ipairs(T) do
+                            d.Text = d.Text:gsub(pair[1], pair[2])
+                        end
+                    end)
                 end
             end
+
+            -- Also catch dynamically added text
             g.DescendantAdded:Connect(function(d)
                 if d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
-                    task.wait(0.05); pcall(function() for _,pair in ipairs(T) do d.Text=d.Text:gsub(pair[1],pair[2]) end end)
+                    task.wait(0.05)
+                    pcall(function()
+                        for _, pair in ipairs(T) do
+                            d.Text = d.Text:gsub(pair[1], pair[2])
+                        end
+                    end)
                 end
             end)
-            for _,d in ipairs(g:GetDescendants()) do
+
+            -- Theme everything red
+            for _, d in ipairs(g:GetDescendants()) do
                 pcall(function()
                     if d:IsA("Frame") or d:IsA("ScrollingFrame") then
-                        if d.BackgroundTransparency>=1 then return end
-                        local r=d.BackgroundColor3.R*255; local gr=d.BackgroundColor3.G*255; local b=d.BackgroundColor3.B*255
-                        if r<45 and gr<45 and b<45 then d.BackgroundColor3=RED_BG elseif r<80 then d.BackgroundColor3=RED_PANEL else d.BackgroundColor3=RED_CARD end
+                        if d.BackgroundTransparency >= 1 then return end
+                        local r = d.BackgroundColor3.R * 255
+                        local gr = d.BackgroundColor3.G * 255
+                        local b = d.BackgroundColor3.B * 255
+                        if r < 45 and gr < 45 and b < 45 then
+                            d.BackgroundColor3 = RED_BG
+                        elseif r < 80 then
+                            d.BackgroundColor3 = RED_PANEL
+                        else
+                            d.BackgroundColor3 = RED_CARD
+                        end
                     elseif d:IsA("TextButton") then
-                        if d.BackgroundTransparency<1 then d.BackgroundColor3=RED_BTN end; d.TextColor3=WHITE; d.Font=Enum.Font.GothamSemibold
-                    elseif d:IsA("TextLabel") then d.TextColor3=RED_TEXT
-                    elseif d:IsA("TextBox") then if d.BackgroundTransparency<1 then d.BackgroundColor3=RED_PANEL end; d.TextColor3=WHITE; d.PlaceholderColor3=RED_DIM
-                    elseif d:IsA("UIStroke") then d.Color=RED_ACCENT2
-                    elseif d:IsA("ImageLabel") or d:IsA("ImageButton") then d.ImageColor3=RED_BRIGHT2
-                    elseif d:IsA("ScrollingFrame") then d.ScrollBarImageColor3=RED_ACCENT2 end
+                        if d.BackgroundTransparency < 1 then
+                            d.BackgroundColor3 = RED_BTN
+                        end
+                        d.TextColor3 = WHITE
+                        d.Font = Enum.Font.GothamSemibold
+                    elseif d:IsA("TextLabel") then
+                        d.TextColor3 = RED_TEXT
+                    elseif d:IsA("TextBox") then
+                        if d.BackgroundTransparency < 1 then
+                            d.BackgroundColor3 = RED_PANEL
+                        end
+                        d.TextColor3 = WHITE
+                        d.PlaceholderColor3 = RED_DIM
+                    elseif d:IsA("UIStroke") then
+                        d.Color = RED_ACCENT
+                    elseif d:IsA("ImageLabel") or d:IsA("ImageButton") then
+                        d.ImageColor3 = RED_BRIGHT
+                    elseif d:IsA("ScrollingFrame") then
+                        d.ScrollBarImageColor3 = RED_ACCENT
+                    end
                 end)
             end
         end)
-        pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/likelysmith/EmptyTools/main/script"))() end)
+
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/likelysmith/EmptyTools/main/script"))()
+        end)
     end,
     function()
-        local SOUL_GUIS={"SoulV1","SoulKeySystem","SoulJerkCredit","SoulAutoClick","SoulAnimChanger","SoulFlySpeed","SoulBoostPopup"}
-        for _,g in ipairs(player.PlayerGui:GetChildren()) do
+        -- Destroy the EmptyTools/SOUL Tools GUI on toggle off
+        local SOUL_GUIS = {
+            "SoulV1","SoulKeySystem","SoulJerkCredit",
+            "SoulAutoClick","SoulAnimChanger","SoulFlySpeed","SoulBoostPopup"
+        }
+        for _, g in ipairs(player.PlayerGui:GetChildren()) do
             if g:IsA("ScreenGui") then
-                local isSoul=false; for _,n in ipairs(SOUL_GUIS) do if g.Name==n then isSoul=true; break end end
+                local isSoul = false
+                for _, n in ipairs(SOUL_GUIS) do if g.Name == n then isSoul = true; break end end
                 if not isSoul then pcall(function() g:Destroy() end) end
             end
         end
@@ -2050,10 +2325,17 @@ makeToggle(miscPage, "Infinite Baseplate", 82,
 )
 
 makeToggle(miscPage, "Speed Boost", 132,
-    function() local hum=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if hum then hum.WalkSpeed=80 end end,
-    function() local hum=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if hum then hum.WalkSpeed=16 end end
+    function()
+        local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = 80 end
+    end,
+    function()
+        local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = 16 end
+    end
 )
 
+-- Click Teleport: press F to teleport to mouse position
 local clickTeleportConn = nil
 local mouse = player:GetMouse()
 makeToggle(miscPage, "Click Teleport  [F]", 182,
@@ -2068,11 +2350,15 @@ makeToggle(miscPage, "Click Teleport  [F]", 182,
                 rayParams.FilterDescendantsInstances = { player.Character }
                 rayParams.FilterType = Enum.RaycastFilterType.Exclude
                 local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000, rayParams)
-                if result then myRoot.CFrame = CFrame.new(result.Position + Vector3.new(0, 3, 0)) end
+                if result then
+                    myRoot.CFrame = CFrame.new(result.Position + Vector3.new(0, 3, 0))
+                end
             end
         end)
     end,
-    function() if clickTeleportConn then clickTeleportConn:Disconnect(); clickTeleportConn = nil end end
+    function()
+        if clickTeleportConn then clickTeleportConn:Disconnect(); clickTeleportConn = nil end
+    end
 )
 
 makeToggle(miscPage, "Infinite Zoom", 232,
@@ -2080,36 +2366,56 @@ makeToggle(miscPage, "Infinite Zoom", 232,
     function() camera.FieldOfView = 70 end
 )
 
+-- TOOLS section
 sectionHeader(miscPage, "TOOLS", 292)
 
 local antiAfkConn = nil
 makeToggle(miscPage, "Anti-AFK", 314,
     function()
+        -- Bypass Roblox AFK kick: fire VirtualUser input every 15s AND catch Idled event
         local vu = game:GetService("VirtualUser")
+        -- Hook the Idled event (fires at ~3 min idle, kicks at ~20 min)
         antiAfkConn = player.Idled:Connect(function()
-            vu:Button2Down(Vector2.new(0,0),camera.CFrame); task.wait(0.1); vu:Button2Up(Vector2.new(0,0),camera.CFrame)
+            vu:Button2Down(Vector2.new(0, 0), camera.CFrame)
+            task.wait(0.1)
+            vu:Button2Up(Vector2.new(0, 0), camera.CFrame)
         end)
+        -- Also run a background loop every 15s to keep the session alive
         task.spawn(function()
             while antiAfkConn do
-                vu:Button2Down(Vector2.new(0,0),camera.CFrame); task.wait(0.1); vu:Button2Up(Vector2.new(0,0),camera.CFrame); task.wait(15)
+                vu:Button2Down(Vector2.new(0, 0), camera.CFrame)
+                task.wait(0.1)
+                vu:Button2Up(Vector2.new(0, 0), camera.CFrame)
+                task.wait(15)
             end
         end)
     end,
-    function() if antiAfkConn then antiAfkConn:Disconnect(); antiAfkConn = nil end end
+    function()
+        if antiAfkConn then antiAfkConn:Disconnect(); antiAfkConn = nil end
+    end
 )
 
 makeToggle(miscPage, "Player Speed Boost", 364,
-    function() local hum=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if hum then hum.WalkSpeed=60 end end,
-    function() local hum=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if hum then hum.WalkSpeed=16 end end
+    function()
+        local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = 60 end
+    end,
+    function()
+        local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.WalkSpeed = 16 end
+    end
 )
 
 makeToggle(miscPage, "Jerk (equip tool)", 414,
     function()
-        pcall(function() loadstring(game:HttpGet("https://pastebin.com/raw/r35KeBfP"))() end)
+        pcall(function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/r35KeBfP"))()
+        end)
+        -- Destroy any credit GUI left by the script
         task.wait(0.3)
-        for _,g in ipairs(player.PlayerGui:GetChildren()) do
+        for _, g in ipairs(player.PlayerGui:GetChildren()) do
             if g:IsA("ScreenGui") then
-                for _,d in ipairs(g:GetDescendants()) do
+                for _, d in ipairs(g:GetDescendants()) do
                     if d:IsA("TextLabel") and (d.Text:lower():find("sai") or d.Text:lower():find("skondo")) then
                         pcall(function() g:Destroy() end); break
                     end
@@ -2122,42 +2428,51 @@ makeToggle(miscPage, "Jerk (equip tool)", 414,
 
 makeToggle(miscPage, "Anti-AFK (Fakeout)", 464,
     function()
-        local vu=game:GetService("VirtualUser")
+        local vu = game:GetService("VirtualUser")
         task.spawn(function()
             while task.wait(60) do
-                vu:Button2Down(Vector2.new(0,0),camera.CFrame); task.wait(0.1); vu:Button2Up(Vector2.new(0,0),camera.CFrame)
+                vu:Button2Down(Vector2.new(0,0), camera.CFrame)
+                task.wait(0.1)
+                vu:Button2Up(Vector2.new(0,0), camera.CFrame)
             end
         end)
     end, nil
 )
 
+-- SYSTEM section
 sectionHeader(miscPage, "SYSTEM", 524)
 
 local rejoinBtn = Instance.new("TextButton")
-rejoinBtn.Size=UDim2.new(1,-24,0,42); rejoinBtn.Position=UDim2.new(0,12,0,546)
-rejoinBtn.BackgroundColor3=BG_CARD; rejoinBtn.Text=""; rejoinBtn.Parent=miscPage
-Instance.new("UICorner",rejoinBtn).CornerRadius=UDim.new(0,8)
-local rjDot=Instance.new("Frame"); rjDot.Size=UDim2.new(0,9,0,9); rjDot.Position=UDim2.new(0,12,0.5,-4)
-rjDot.BackgroundColor3=RED_GLOW; rjDot.Parent=rejoinBtn; Instance.new("UICorner",rjDot).CornerRadius=UDim.new(1,0)
-local rjLbl=Instance.new("TextLabel"); rjLbl.Size=UDim2.new(1,-30,1,0); rjLbl.Position=UDim2.new(0,28,0,0)
+rejoinBtn.Size = UDim2.new(1, -24, 0, 42); rejoinBtn.Position = UDim2.new(0, 12, 0, 546)
+rejoinBtn.BackgroundColor3 = BG_CARD; rejoinBtn.Text = ""; rejoinBtn.Parent = miscPage
+Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 8)
+local rjDot = Instance.new("Frame"); rjDot.Size = UDim2.new(0,9,0,9); rjDot.Position = UDim2.new(0,12,0.5,-4)
+rjDot.BackgroundColor3 = RED_GLOW; rjDot.Parent = rejoinBtn; Instance.new("UICorner",rjDot).CornerRadius = UDim.new(1,0)
+local rjLbl = Instance.new("TextLabel"); rjLbl.Size = UDim2.new(1,-30,1,0); rjLbl.Position = UDim2.new(0,28,0,0)
 rjLbl.BackgroundTransparency=1; rjLbl.Text="Rejoin Server"; rjLbl.TextColor3=TXT_MAIN; rjLbl.TextSize=13
 rjLbl.Font=Enum.Font.Gotham; rjLbl.TextXAlignment=Enum.TextXAlignment.Left; rjLbl.Parent=rejoinBtn
-rejoinBtn.MouseButton1Click:Connect(function() game:GetService("TeleportService"):Teleport(game.PlaceId, player) end)
-rejoinBtn.MouseEnter:Connect(function() TweenService:Create(rejoinBtn,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
-rejoinBtn.MouseLeave:Connect(function() TweenService:Create(rejoinBtn,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
+rejoinBtn.MouseButton1Click:Connect(function()
+    local TeleportService = game:GetService("TeleportService")
+    TeleportService:Teleport(game.PlaceId, player)
+end)
+rejoinBtn.MouseEnter:Connect(function() TweenService:Create(rejoinBtn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play() end)
+rejoinBtn.MouseLeave:Connect(function() TweenService:Create(rejoinBtn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play() end)
 
 local unloadBtn = Instance.new("TextButton")
-unloadBtn.Size=UDim2.new(1,-24,0,42); unloadBtn.Position=UDim2.new(0,12,0,596)
-unloadBtn.BackgroundColor3=BG_CARD; unloadBtn.Text=""; unloadBtn.Parent=miscPage
-Instance.new("UICorner",unloadBtn).CornerRadius=UDim.new(0,8)
-local ulDot=Instance.new("Frame"); ulDot.Size=UDim2.new(0,9,0,9); ulDot.Position=UDim2.new(0,12,0.5,-4)
-ulDot.BackgroundColor3=RED_GLOW; ulDot.Parent=unloadBtn; Instance.new("UICorner",ulDot).CornerRadius=UDim.new(1,0)
-local ulLbl=Instance.new("TextLabel"); ulLbl.Size=UDim2.new(1,-30,1,0); ulLbl.Position=UDim2.new(0,28,0,0)
+unloadBtn.Size = UDim2.new(1, -24, 0, 42); unloadBtn.Position = UDim2.new(0, 12, 0, 596)
+unloadBtn.BackgroundColor3 = BG_CARD; unloadBtn.Text = ""; unloadBtn.Parent = miscPage
+Instance.new("UICorner", unloadBtn).CornerRadius = UDim.new(0, 8)
+local ulDot = Instance.new("Frame"); ulDot.Size = UDim2.new(0,9,0,9); ulDot.Position = UDim2.new(0,12,0.5,-4)
+ulDot.BackgroundColor3 = RED_GLOW; ulDot.Parent = unloadBtn; Instance.new("UICorner",ulDot).CornerRadius = UDim.new(1,0)
+local ulLbl = Instance.new("TextLabel"); ulLbl.Size = UDim2.new(1,-30,1,0); ulLbl.Position = UDim2.new(0,28,0,0)
 ulLbl.BackgroundTransparency=1; ulLbl.Text="Unload Script"; ulLbl.TextColor3=TXT_MAIN; ulLbl.TextSize=13
 ulLbl.Font=Enum.Font.Gotham; ulLbl.TextXAlignment=Enum.TextXAlignment.Left; ulLbl.Parent=unloadBtn
-unloadBtn.MouseButton1Click:Connect(function() stopViewing(); screenGui:Destroy() end)
-unloadBtn.MouseEnter:Connect(function() TweenService:Create(unloadBtn,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
-unloadBtn.MouseLeave:Connect(function() TweenService:Create(unloadBtn,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
+unloadBtn.MouseButton1Click:Connect(function()
+    stopViewing()
+    screenGui:Destroy()
+end)
+unloadBtn.MouseEnter:Connect(function() TweenService:Create(unloadBtn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play() end)
+unloadBtn.MouseLeave:Connect(function() TweenService:Create(unloadBtn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play() end)
 
 miscTabBtn.MouseButton1Click:Connect(function() switchTab("Misc") end)
 
@@ -2170,24 +2485,30 @@ sectionHeader(externalPage, "EXTERNAL SCRIPTS", 10)
 
 local function extBtn(text, posY, fn)
     local btn = Instance.new("TextButton")
-    btn.Size=UDim2.new(1,-24,0,42); btn.Position=UDim2.new(0,12,0,posY)
-    btn.BackgroundColor3=BG_CARD; btn.Text=""; btn.Parent=externalPage
-    Instance.new("UICorner",btn).CornerRadius=UDim.new(0,8)
-    local s=Instance.new("UIStroke",btn); s.Color=RED_STROKE; s.Thickness=1; s.Transparency=0.55
-    local dot=Instance.new("Frame"); dot.Size=UDim2.new(0,9,0,9); dot.Position=UDim2.new(0,12,0.5,-4)
-    dot.BackgroundColor3=Color3.fromRGB(255,200,0); dot.Parent=btn
-    Instance.new("UICorner",dot).CornerRadius=UDim.new(1,0)
-    local lbl=Instance.new("TextLabel"); lbl.Size=UDim2.new(1,-30,1,0); lbl.Position=UDim2.new(0,28,0,0)
+    btn.Size = UDim2.new(1, -24, 0, 42); btn.Position = UDim2.new(0, 12, 0, posY)
+    btn.BackgroundColor3 = BG_CARD; btn.Text = ""; btn.Parent = externalPage
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    local s = Instance.new("UIStroke", btn); s.Color = RED_STROKE; s.Thickness = 1; s.Transparency = 0.55
+    local dot = Instance.new("Frame"); dot.Size = UDim2.new(0,9,0,9); dot.Position = UDim2.new(0,12,0.5,-4)
+    dot.BackgroundColor3 = Color3.fromRGB(255, 200, 0); dot.Parent = btn
+    Instance.new("UICorner", dot).CornerRadius = UDim.new(1,0)
+    local lbl = Instance.new("TextLabel"); lbl.Size = UDim2.new(1,-30,1,0); lbl.Position = UDim2.new(0,28,0,0)
     lbl.BackgroundTransparency=1; lbl.Text=text; lbl.TextColor3=TXT_MAIN; lbl.TextSize=13
     lbl.Font=Enum.Font.Gotham; lbl.TextXAlignment=Enum.TextXAlignment.Left; lbl.Parent=btn
     btn.MouseButton1Click:Connect(function() pcall(fn) end)
-    btn.MouseEnter:Connect(function() TweenService:Create(btn,TweenInfo.new(0.12),{BackgroundColor3=RED_BRIGHT}):Play() end)
-    btn.MouseLeave:Connect(function() TweenService:Create(btn,TweenInfo.new(0.12),{BackgroundColor3=BG_CARD}):Play() end)
+    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = RED_BRIGHT }):Play() end)
+    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.12), { BackgroundColor3 = BG_CARD }):Play() end)
 end
 
-extBtn("Infinite Yield", 32,  function() loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))() end)
-extBtn("Dex Explorer",  82,  function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end)
-extBtn("Dark Dex",      132, function() loadstring(game:HttpGet("https://raw.githubusercontent.com/GreenDaMom/DarkDex-v3/main/dark.lua"))() end)
+extBtn("Infinite Yield", 32, function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end)
+extBtn("Dex Explorer", 82, function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()
+end)
+extBtn("Dark Dex", 132, function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/GreenDaMom/DarkDex-v3/main/dark.lua"))()
+end)
 
 externalTabBtn.MouseButton1Click:Connect(function() switchTab("External") end)
 
@@ -2196,76 +2517,192 @@ local extraTabBtn = createTabButton("Extra", 9)
 local extraPage = createPage()
 tabs["Extra"].page = extraPage
 
+-- Small label inside the tab page
 local extraInfoLbl = Instance.new("TextLabel")
-extraInfoLbl.Size=UDim2.new(1,-24,0,40); extraInfoLbl.Position=UDim2.new(0,12,0,16)
-extraInfoLbl.BackgroundTransparency=1; extraInfoLbl.Text="Click the Extra tab again to open Command List"
-extraInfoLbl.TextColor3=TXT_DIM; extraInfoLbl.TextSize=12; extraInfoLbl.Font=Enum.Font.Gotham
-extraInfoLbl.TextXAlignment=Enum.TextXAlignment.Center; extraInfoLbl.TextWrapped=true; extraInfoLbl.Parent=extraPage
+extraInfoLbl.Size = UDim2.new(1, -24, 0, 40); extraInfoLbl.Position = UDim2.new(0, 12, 0, 16)
+extraInfoLbl.BackgroundTransparency = 1
+extraInfoLbl.Text = "Click the Extra tab again to open Command List"
+extraInfoLbl.TextColor3 = TXT_DIM; extraInfoLbl.TextSize = 12; extraInfoLbl.Font = Enum.Font.Gotham
+extraInfoLbl.TextXAlignment = Enum.TextXAlignment.Center; extraInfoLbl.TextWrapped = true
+extraInfoLbl.Parent = extraPage
 
+-- Command list popup
 local cmdListGui = nil
 
 local CMDS = {
-    {name=";sfly",desc="Toggle Superman Fly"},{name=";baseplate",desc="Toggle Infinite Baseplate"},{name=";speed",desc="Toggle Speed Boost"},{name=";noclip",desc="Toggle No Clip"},{name=";zoom",desc="Toggle Infinite Zoom"},{name=";teleport",desc="Click Teleport [F]"},{name=";afk",desc="Toggle Anti-AFK"},{name=";aimlock",desc="Toggle Aimlock"},{name=";hitbox",desc="Toggle Hitbox Expander"},{name=";autoclicker",desc="Toggle Auto Clicker"},{name=";infijump",desc="Toggle Infinite Jump"},{name=";esp",desc="Toggle Player ESP"},{name=";fullbright",desc="Toggle Full Bright"},{name=";hidegui",desc="Toggle Hide GUI"},{name=";sad",desc="Send Soul V1 chat ad"},{name=";facebang",desc="Toggle Face Bang"},{name=";fpson",desc="FPS Boost ON"},{name=";fpsoff",desc="FPS Boost OFF"},{name=";mute",desc="Mute all sounds"},{name=";unmute",desc="Unmute all sounds"},{name=";day",desc="Set time to daytime"},{name=";night",desc="Set time to night"},{name=";sunrise",desc="Set time to sunrise"},{name=";sunset",desc="Set time to sunset"},{name=";fog",desc="Add thick fog"},{name=";clearfog",desc="Remove all fog"},{name=";lowgrav",desc="Low gravity (5)"},{name=";nograv",desc="Zero gravity (space)"},{name=";highgrav",desc="High gravity (400)"},{name=";normgrav",desc="Normal gravity (196.2)"},{name=";invis",desc="Make yourself invisible"},{name=";vis",desc="Make yourself visible"},{name=";freeze",desc="Freeze character in place"},{name=";unfreeze",desc="Unfreeze character"},{name=";god",desc="God mode - lock health at max"},{name=";fling",desc="Fling yourself into the air"},{name=";explode",desc="Explosion at your position"},{name=";spin",desc="Spin your character 360"},{name=";reset",desc="Reset your character"},{name=";rejoin",desc="Rejoin current server"},{name=";fp",desc="Lock to first person"},{name=";fc",desc="Free camera zoom"},{name=";maxjump",desc="Max jump power (500)"},{name=";resetjump",desc="Reset jump power (50)"},{name=";spawn",desc="Teleport to map spawn"},{name=";disco",desc="Disco lighting flash"},{name=";sky pink",desc="Set sky to pink"},{name=";sky red",desc="Set sky to red"},{name=";sky blue",desc="Set sky to blue"},{name=";sky purple",desc="Set sky to purple"},{name=";sky green",desc="Set sky to green"},{name=";sky orange",desc="Set sky to orange"},{name=";sky yellow",desc="Set sky to yellow"},{name=";sky cyan",desc="Set sky to cyan"},{name=";sky black",desc="Set sky to black"},{name=";sky white",desc="Set sky to white"},{name=";sky galaxy",desc="Set sky to galaxy purple"},{name=";sky reset",desc="Reset sky to default"},{name=";help",desc="Show this command list"},
+    { name = ";sfly",         desc = "Toggle Superman Fly"           },
+    { name = ";baseplate",    desc = "Toggle Infinite Baseplate"     },
+    { name = ";speed",        desc = "Toggle Speed Boost"            },
+    { name = ";noclip",       desc = "Toggle No Clip"                },
+    { name = ";zoom",         desc = "Toggle Infinite Zoom"          },
+    { name = ";teleport",     desc = "Click Teleport [F]"            },
+    { name = ";afk",          desc = "Toggle Anti-AFK"               },
+    { name = ";aimlock",      desc = "Toggle Aimlock"                },
+    { name = ";hitbox",       desc = "Toggle Hitbox Expander"        },
+    { name = ";autoclicker",  desc = "Toggle Auto Clicker"           },
+    { name = ";infijump",     desc = "Toggle Infinite Jump"          },
+    { name = ";esp",          desc = "Toggle Player ESP"             },
+    { name = ";fullbright",   desc = "Toggle Full Bright"            },
+    { name = ";hidegui",      desc = "Toggle Hide GUI"               },
+    { name = ";sad",          desc = "Send Soul V1 chat ad"          },
+    { name = ";facebang",     desc = "Toggle Face Bang"              },
+    { name = ";fpson",        desc = "FPS Boost ON"                  },
+    { name = ";fpsoff",       desc = "FPS Boost OFF"                 },
+    { name = ";mute",         desc = "Mute all sounds"               },
+    { name = ";unmute",       desc = "Unmute all sounds"             },
+    { name = ";day",          desc = "Set time to daytime"           },
+    { name = ";night",        desc = "Set time to night"             },
+    { name = ";sunrise",      desc = "Set time to sunrise"           },
+    { name = ";sunset",       desc = "Set time to sunset"            },
+    { name = ";fog",          desc = "Add thick fog"                 },
+    { name = ";clearfog",     desc = "Remove all fog"                },
+    { name = ";lowgrav",      desc = "Low gravity (5)"               },
+    { name = ";nograv",       desc = "Zero gravity (space)"          },
+    { name = ";highgrav",     desc = "High gravity (400)"            },
+    { name = ";normgrav",     desc = "Normal gravity (196.2)"        },
+    { name = ";invis",        desc = "Make yourself invisible"       },
+    { name = ";vis",          desc = "Make yourself visible"         },
+    { name = ";freeze",       desc = "Freeze character in place"     },
+    { name = ";unfreeze",     desc = "Unfreeze character"            },
+    { name = ";god",          desc = "God mode - lock health at max" },
+    { name = ";fling",        desc = "Fling yourself into the air"   },
+    { name = ";explode",      desc = "Explosion at your position"    },
+    { name = ";spin",         desc = "Spin your character 360°"      },
+    { name = ";reset",        desc = "Reset your character"          },
+    { name = ";rejoin",       desc = "Rejoin current server"         },
+    { name = ";fp",           desc = "Lock to first person"          },
+    { name = ";fc",           desc = "Free camera zoom"              },
+    { name = ";maxjump",      desc = "Max jump power (500)"          },
+    { name = ";resetjump",    desc = "Reset jump power (50)"         },
+    { name = ";spawn",        desc = "Teleport to map spawn"         },
+    { name = ";disco",        desc = "Disco lighting flash"          },
+    { name = ";sky pink",     desc = "Set sky to pink"               },
+    { name = ";sky red",      desc = "Set sky to red"                },
+    { name = ";sky blue",     desc = "Set sky to blue"               },
+    { name = ";sky purple",   desc = "Set sky to purple"             },
+    { name = ";sky green",    desc = "Set sky to green"              },
+    { name = ";sky orange",   desc = "Set sky to orange"             },
+    { name = ";sky yellow",   desc = "Set sky to yellow"             },
+    { name = ";sky cyan",     desc = "Set sky to cyan"               },
+    { name = ";sky black",    desc = "Set sky to black"              },
+    { name = ";sky white",    desc = "Set sky to white"              },
+    { name = ";sky galaxy",   desc = "Set sky to galaxy purple"      },
+    { name = ";sky reset",    desc = "Reset sky to default"          },
+    { name = ";help",         desc = "Show this command list"        },
 }
 
 local function openCmdList()
-    if cmdListGui and cmdListGui.Parent then cmdListGui:Destroy(); cmdListGui=nil; return end
-    cmdListGui = Instance.new("ScreenGui")
-    cmdListGui.Name="SoulCmdList"; cmdListGui.ResetOnSpawn=false
-    cmdListGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling; cmdListGui.DisplayOrder=45; cmdListGui.Parent=player.PlayerGui
-    local card=Instance.new("Frame")
-    card.Size=UDim2.new(0,300,0,0); card.Position=UDim2.new(0,20,0.5,-260)
-    card.BackgroundColor3=Color3.fromRGB(16,3,3); card.BorderSizePixel=0; card.ClipsDescendants=true
-    card.ZIndex=10; card.Parent=cmdListGui
-    Instance.new("UICorner",card).CornerRadius=UDim.new(0,12)
-    local cStroke=Instance.new("UIStroke",card); cStroke.Color=Color3.fromRGB(139,0,0); cStroke.Thickness=1.5
-    local hdr=Instance.new("Frame")
-    hdr.Size=UDim2.new(1,0,0,44); hdr.BackgroundColor3=Color3.fromRGB(25,4,4)
-    hdr.BorderSizePixel=0; hdr.ZIndex=11; hdr.Parent=card
-    Instance.new("UICorner",hdr).CornerRadius=UDim.new(0,12)
-    local hIcon=Instance.new("TextLabel")
-    hIcon.Size=UDim2.new(0,30,1,0); hIcon.Position=UDim2.new(0,10,0,0)
-    hIcon.BackgroundTransparency=1; hIcon.Text="="; hIcon.TextColor3=RED_GLOW; hIcon.TextSize=22; hIcon.Font=Enum.Font.GothamBold; hIcon.ZIndex=12; hIcon.Parent=hdr
-    local hTitle=Instance.new("TextLabel")
-    hTitle.Size=UDim2.new(1,-80,1,0); hTitle.Position=UDim2.new(0,42,0,0)
-    hTitle.BackgroundTransparency=1; hTitle.Text="Command List"; hTitle.TextColor3=Color3.new(1,1,1); hTitle.TextSize=16; hTitle.Font=Enum.Font.GothamBold; hTitle.TextXAlignment=Enum.TextXAlignment.Left; hTitle.ZIndex=12; hTitle.Parent=hdr
-    local hClose=Instance.new("TextButton")
-    hClose.Size=UDim2.new(0,26,0,26); hClose.Position=UDim2.new(1,-32,0.5,-13)
-    hClose.BackgroundColor3=Color3.fromRGB(100,0,0); hClose.Text="x"; hClose.TextColor3=Color3.new(1,1,1); hClose.TextSize=18; hClose.Font=Enum.Font.GothamBold; hClose.ZIndex=12; hClose.Parent=hdr
-    Instance.new("UICorner",hClose).CornerRadius=UDim.new(0,6)
-    hClose.MouseButton1Click:Connect(function() cmdListGui:Destroy(); cmdListGui=nil end)
-    local scroll=Instance.new("ScrollingFrame")
-    scroll.Size=UDim2.new(1,-12,1,-52); scroll.Position=UDim2.new(0,6,0,50)
-    scroll.BackgroundTransparency=1; scroll.BorderSizePixel=0; scroll.ScrollBarThickness=3; scroll.ScrollBarImageColor3=Color3.fromRGB(139,0,0)
-    scroll.CanvasSize=UDim2.new(0,0,0,0); scroll.AutomaticCanvasSize=Enum.AutomaticSize.Y; scroll.ZIndex=11; scroll.Parent=card
-    local layout=Instance.new("UIListLayout"); layout.SortOrder=Enum.SortOrder.LayoutOrder; layout.Padding=UDim.new(0,2); layout.Parent=scroll
-    local pad=Instance.new("UIPadding"); pad.PaddingTop=UDim.new(0,4); pad.PaddingBottom=UDim.new(0,6); pad.PaddingLeft=UDim.new(0,2); pad.PaddingRight=UDim.new(0,2); pad.Parent=scroll
-    for i,cmd in ipairs(CMDS) do
-        local row=Instance.new("Frame"); row.Size=UDim2.new(1,0,0,52); row.LayoutOrder=i
-        row.BackgroundColor3=Color3.fromRGB(28,5,5); row.BorderSizePixel=0; row.ZIndex=12; row.Parent=scroll
-        Instance.new("UICorner",row).CornerRadius=UDim.new(0,6)
-        local cmdLbl=Instance.new("TextLabel"); cmdLbl.Size=UDim2.new(1,-14,0,26); cmdLbl.Position=UDim2.new(0,12,0,5)
-        cmdLbl.BackgroundTransparency=1; cmdLbl.Text=cmd.name; cmdLbl.TextColor3=Color3.new(1,1,1); cmdLbl.TextSize=14; cmdLbl.Font=Enum.Font.GothamBold; cmdLbl.TextXAlignment=Enum.TextXAlignment.Left; cmdLbl.ZIndex=13; cmdLbl.Parent=row
-        local descLbl=Instance.new("TextLabel"); descLbl.Size=UDim2.new(1,-14,0,18); descLbl.Position=UDim2.new(0,12,0,28)
-        descLbl.BackgroundTransparency=1; descLbl.Text=cmd.desc; descLbl.TextColor3=TXT_DIM; descLbl.TextSize=11; descLbl.Font=Enum.Font.Gotham; descLbl.TextXAlignment=Enum.TextXAlignment.Left; descLbl.ZIndex=13; descLbl.Parent=row
+    -- Toggle off if already open
+    if cmdListGui and cmdListGui.Parent then
+        cmdListGui:Destroy(); cmdListGui = nil; return
     end
-    local targetH=math.min(#CMDS*54+60,520)
-    TweenService:Create(card,TweenInfo.new(0.35,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0,300,0,targetH)}):Play()
-    local dragging2,dragStart2,dragPos2=false,nil,nil
+
+    cmdListGui = Instance.new("ScreenGui")
+    cmdListGui.Name = "SoulCmdList"; cmdListGui.ResetOnSpawn = false
+    cmdListGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    cmdListGui.DisplayOrder = 45; cmdListGui.Parent = player.PlayerGui
+
+    -- Card
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(0, 300, 0, 0)  -- animates to full height
+    card.Position = UDim2.new(0, 20, 0.5, -260)
+    card.BackgroundColor3 = Color3.fromRGB(16, 3, 3)
+    card.BorderSizePixel = 0; card.ClipsDescendants = true
+    card.ZIndex = 10; card.Parent = cmdListGui
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
+    local cStroke = Instance.new("UIStroke", card)
+    cStroke.Color = Color3.fromRGB(139, 0, 0); cStroke.Thickness = 1.5
+
+    -- Header
+    local hdr = Instance.new("Frame")
+    hdr.Size = UDim2.new(1, 0, 0, 44)
+    hdr.BackgroundColor3 = Color3.fromRGB(25, 4, 4)
+    hdr.BorderSizePixel = 0; hdr.ZIndex = 11; hdr.Parent = card
+    Instance.new("UICorner", hdr).CornerRadius = UDim.new(0, 12)
+
+    -- Header icon + title
+    local hIcon = Instance.new("TextLabel")
+    hIcon.Size = UDim2.new(0, 30, 1, 0); hIcon.Position = UDim2.new(0, 10, 0, 0)
+    hIcon.BackgroundTransparency = 1; hIcon.Text = "≡"
+    hIcon.TextColor3 = RED_GLOW; hIcon.TextSize = 22; hIcon.Font = Enum.Font.GothamBold
+    hIcon.ZIndex = 12; hIcon.Parent = hdr
+
+    local hTitle = Instance.new("TextLabel")
+    hTitle.Size = UDim2.new(1, -80, 1, 0); hTitle.Position = UDim2.new(0, 42, 0, 0)
+    hTitle.BackgroundTransparency = 1; hTitle.Text = "Command List"
+    hTitle.TextColor3 = Color3.new(1, 1, 1); hTitle.TextSize = 16; hTitle.Font = Enum.Font.GothamBold
+    hTitle.TextXAlignment = Enum.TextXAlignment.Left; hTitle.ZIndex = 12; hTitle.Parent = hdr
+
+    local hClose = Instance.new("TextButton")
+    hClose.Size = UDim2.new(0, 26, 0, 26); hClose.Position = UDim2.new(1, -32, 0.5, -13)
+    hClose.BackgroundColor3 = Color3.fromRGB(100, 0, 0); hClose.Text = "×"
+    hClose.TextColor3 = Color3.new(1,1,1); hClose.TextSize = 18; hClose.Font = Enum.Font.GothamBold
+    hClose.ZIndex = 12; hClose.Parent = hdr
+    Instance.new("UICorner", hClose).CornerRadius = UDim.new(0, 6)
+    hClose.MouseButton1Click:Connect(function() cmdListGui:Destroy(); cmdListGui = nil end)
+
+    -- Scrollable list
+    local scroll = Instance.new("ScrollingFrame")
+    scroll.Size = UDim2.new(1, -12, 1, -52); scroll.Position = UDim2.new(0, 6, 0, 50)
+    scroll.BackgroundTransparency = 1; scroll.BorderSizePixel = 0
+    scroll.ScrollBarThickness = 3; scroll.ScrollBarImageColor3 = Color3.fromRGB(139, 0, 0)
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0); scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scroll.ZIndex = 11; scroll.Parent = card
+
+    local layout = Instance.new("UIListLayout")
+    layout.SortOrder = Enum.SortOrder.LayoutOrder; layout.Padding = UDim.new(0, 2)
+    layout.Parent = scroll
+    local pad = Instance.new("UIPadding")
+    pad.PaddingTop = UDim.new(0, 4); pad.PaddingBottom = UDim.new(0, 6)
+    pad.PaddingLeft = UDim.new(0, 2); pad.PaddingRight = UDim.new(0, 2)
+    pad.Parent = scroll
+
+    for i, cmd in ipairs(CMDS) do
+        local row = Instance.new("Frame")
+        row.Size = UDim2.new(1, 0, 0, 52); row.LayoutOrder = i
+        row.BackgroundColor3 = Color3.fromRGB(28, 5, 5)
+        row.BackgroundTransparency = 0; row.BorderSizePixel = 0
+        row.ZIndex = 12; row.Parent = scroll
+        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 6)
+
+        local cmdLbl = Instance.new("TextLabel")
+        cmdLbl.Size = UDim2.new(1, -14, 0, 26); cmdLbl.Position = UDim2.new(0, 12, 0, 5)
+        cmdLbl.BackgroundTransparency = 1; cmdLbl.Text = cmd.name
+        cmdLbl.TextColor3 = Color3.new(1,1,1); cmdLbl.TextSize = 14; cmdLbl.Font = Enum.Font.GothamBold
+        cmdLbl.TextXAlignment = Enum.TextXAlignment.Left; cmdLbl.ZIndex = 13; cmdLbl.Parent = row
+
+        local descLbl = Instance.new("TextLabel")
+        descLbl.Size = UDim2.new(1, -14, 0, 18); descLbl.Position = UDim2.new(0, 12, 0, 28)
+        descLbl.BackgroundTransparency = 1; descLbl.Text = cmd.desc
+        descLbl.TextColor3 = TXT_DIM; descLbl.TextSize = 11; descLbl.Font = Enum.Font.Gotham
+        descLbl.TextXAlignment = Enum.TextXAlignment.Left; descLbl.ZIndex = 13; descLbl.Parent = row
+    end
+
+    -- Animate open
+    local targetH = math.min(#CMDS * 54 + 60, 520)
+    TweenService:Create(card, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Size = UDim2.new(0, 300, 0, targetH) }):Play()
+
+    -- Draggable
+    local dragging2, dragStart2, dragPos2 = false, nil, nil
     hdr.InputBegan:Connect(function(inp)
-        if inp.UserInputType==Enum.UserInputType.MouseButton1 then
-            dragging2=true; dragStart2=inp.Position; dragPos2=card.Position
-            inp.Changed:Connect(function() if inp.UserInputState==Enum.UserInputState.End then dragging2=false end end)
+        if inp.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging2 = true; dragStart2 = inp.Position; dragPos2 = card.Position
+            inp.Changed:Connect(function() if inp.UserInputState == Enum.UserInputState.End then dragging2 = false end end)
         end
     end)
     UserInputService.InputChanged:Connect(function(inp)
-        if dragging2 and inp.UserInputType==Enum.UserInputType.MouseMovement then
-            local d=inp.Position-dragStart2; card.Position=UDim2.new(dragPos2.X.Scale,dragPos2.X.Offset+d.X,dragPos2.Y.Scale,dragPos2.Y.Offset+d.Y)
+        if dragging2 and inp.UserInputType == Enum.UserInputType.MouseMovement then
+            local d = inp.Position - dragStart2
+            card.Position = UDim2.new(dragPos2.X.Scale, dragPos2.X.Offset+d.X, dragPos2.Y.Scale, dragPos2.Y.Offset+d.Y)
         end
     end)
 end
 
-extraTabBtn.MouseButton1Click:Connect(function() switchTab("Extra"); openCmdList() end)
+extraTabBtn.MouseButton1Click:Connect(function()
+    switchTab("Extra")
+    openCmdList()
+end)
 
 -- ===================== DRAG =====================
 local dragging, dragStart, startPos
@@ -2310,217 +2747,310 @@ end)
 print("Soul V1 loaded!")
 
 -- ===================== CHAT COMMAND SYSTEM =====================
+-- Type ;command in Roblox chat to trigger features
+-- Commands are intercepted client-side and NOT sent to other players
+
 local chatCommandPrefix = ";"
-local cmdActive = {}
 
-local actions = {
-    ["sfly"]        = function() cmdActive["sfly"]=not cmdActive["sfly"]; if cmdActive["sfly"] then pcall(function() loadstring(game:HttpGet("https://pastebin.com/raw/uxGd6Y83"))() end); showNotif("Superman Fly",true) else local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h.PlatformStand=false end; showNotif("Superman Fly",false) end end,
-    ["baseplate"]   = function() cmdActive["baseplate"]=not cmdActive["baseplate"]; if cmdActive["baseplate"] then pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/likelysmith/EmptyTools/main/script"))() end); showNotif("Infinite Baseplate",true) else showNotif("Infinite Baseplate",false) end end,
-    ["speed"]       = function() cmdActive["speed"]=not cmdActive["speed"]; local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if cmdActive["speed"] then if h then h.WalkSpeed=80 end; showNotif("Speed Boost",true) else if h then h.WalkSpeed=16 end; showNotif("Speed Boost",false) end end,
-    ["noclip"]      = function() cmdActive["noclip"]=not cmdActive["noclip"]; if cmdActive["noclip"] then RunService.Stepped:Connect(function() if not cmdActive["noclip"] then return end; local c=player.Character; if c then for _,p in pairs(c:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end end end); showNotif("No Clip",true) else showNotif("No Clip",false) end end,
-    ["zoom"]        = function() cmdActive["zoom"]=not cmdActive["zoom"]; if cmdActive["zoom"] then camera.FieldOfView=90; showNotif("Infinite Zoom",true) else camera.FieldOfView=70; showNotif("Infinite Zoom",false) end end,
-    ["teleport"]    = function()
-        cmdActive["teleport"]=not cmdActive["teleport"]
-        showNotif("Click Teleport [F]", cmdActive["teleport"])
-        if cmdActive["teleport"] then
-            local mouse = player:GetMouse()
-            local tpConn
-            tpConn = UserInputService.InputBegan:Connect(function(inp, gp)
-                if not cmdActive["teleport"] then tpConn:Disconnect(); return end
-                if gp then return end
-                if inp.KeyCode == Enum.KeyCode.F then
-                    local myRoot = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-                    if not myRoot then return end
-                    local unitRay = camera:ScreenPointToRay(mouse.X, mouse.Y)
-                    local rayParams = RaycastParams.new()
-                    rayParams.FilterDescendantsInstances = { player.Character }
-                    rayParams.FilterType = Enum.RaycastFilterType.Exclude
-                    local result = workspace:Raycast(unitRay.Origin, unitRay.Direction * 1000, rayParams)
-                    if result then
-                        myRoot.CFrame = CFrame.new(result.Position + Vector3.new(0, 3, 0))
-                    end
-                end
-            end)
-        end
-    end,
-    ["afk"]         = function() cmdActive["afk"]=not cmdActive["afk"]; if cmdActive["afk"] then local vu=game:GetService("VirtualUser"); player.Idled:Connect(function() if cmdActive["afk"] then vu:Button2Down(Vector2.new(0,0),camera.CFrame); task.wait(0.1); vu:Button2Up(Vector2.new(0,0),camera.CFrame) end end); showNotif("Anti-AFK",true) else showNotif("Anti-AFK",false) end end,
-    ["infijump"]    = function() cmdActive["infijump"]=not cmdActive["infijump"]; if cmdActive["infijump"] then UserInputService.JumpRequest:Connect(function() if not cmdActive["infijump"] then return end; local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end end); showNotif("Infinite Jump",true) else showNotif("Infinite Jump",false) end end,
-    ["fullbright"]  = function() cmdActive["fullbright"]=not cmdActive["fullbright"]; local l=game:GetService("Lighting"); if cmdActive["fullbright"] then l.Brightness=10; l.ClockTime=14; l.FogEnd=100000; l.GlobalShadows=false; showNotif("Full Bright",true) else l.Brightness=1; l.GlobalShadows=true; showNotif("Full Bright",false) end end,
-    ["hidegui"]     = function() cmdActive["hidegui"]=not cmdActive["hidegui"]; screenGui.Enabled=not cmdActive["hidegui"]; showNotif("Hide GUI",cmdActive["hidegui"]) end,
-    ["sad"]         = function() showNotif("SAD",true); task.spawn(function() pcall(function() game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SayMessageRequest"):FireServer("Soul V1 Script  in beta version right now","All") end); task.wait(4); pcall(function() game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SayMessageRequest"):FireServer("join our comns  QGrXsqqbDc","All") end) end) end,
-    ["facebang"]    = function() cmdActive["facebang"]=not cmdActive["facebang"]; if cmdActive["facebang"] then pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/nomercy0000/face-fuck/refs/heads/main/mic%20up"))() end); showNotif("Face Bang",true) else showNotif("Face Bang",false) end end,
-    ["aimlock"]     = function() cmdActive["aimlock"]=not cmdActive["aimlock"]; showNotif("Aimlock",cmdActive["aimlock"]) end,
-    ["hitbox"]      = function() cmdActive["hitbox"]=not cmdActive["hitbox"]; showNotif("Hitbox Expander",cmdActive["hitbox"]) end,
-    ["autoclicker"] = function() cmdActive["autoclicker"]=not cmdActive["autoclicker"]; showNotif("Auto Clicker",cmdActive["autoclicker"]) end,
-    ["esp"]         = function() cmdActive["esp"]=not cmdActive["esp"]; showNotif("Player ESP",cmdActive["esp"]) end,
-    ["fpson"]       = function() for _,v in ipairs(workspace:GetDescendants()) do pcall(function() if v:IsA("ParticleEmitter") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then v.Enabled=false elseif v:IsA("Beam") or v:IsA("Trail") then v.Enabled=false elseif v:IsA("Texture") or v:IsA("Decal") then v.Transparency=1 end end) end; local l=game:GetService("Lighting"); l.GlobalShadows=false; for _,e in ipairs(l:GetChildren()) do if e:IsA("PostEffect") then e.Enabled=false end end; pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Level01 end); showNotif("FPS Boost ON",true) end,
-    ["fpsoff"]      = function() for _,v in ipairs(workspace:GetDescendants()) do pcall(function() if v:IsA("ParticleEmitter") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then v.Enabled=true elseif v:IsA("Beam") or v:IsA("Trail") then v.Enabled=true elseif v:IsA("Texture") or v:IsA("Decal") then v.Transparency=0 end end) end; local l=game:GetService("Lighting"); l.GlobalShadows=true; for _,e in ipairs(l:GetChildren()) do if e:IsA("PostEffect") then e.Enabled=true end end; pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Automatic end); showNotif("FPS Boost OFF",true) end,
-    ["mute"]        = function() for _,v in ipairs(workspace:GetDescendants()) do if v:IsA("Sound") then pcall(function() v.Volume=0 end) end end; showNotif("Muted All Sounds",true) end,
-    ["unmute"]      = function() for _,v in ipairs(workspace:GetDescendants()) do if v:IsA("Sound") then pcall(function() v.Volume=1 end) end end; showNotif("Unmuted All Sounds",true) end,
-    ["day"]         = function() game:GetService("Lighting").ClockTime=14; showNotif("Daytime",true) end,
-    ["night"]       = function() game:GetService("Lighting").ClockTime=0;  showNotif("Night",true) end,
-    ["sunrise"]     = function() game:GetService("Lighting").ClockTime=6;  showNotif("Sunrise",true) end,
-    ["sunset"]      = function() game:GetService("Lighting").ClockTime=18; showNotif("Sunset",true) end,
-    ["fog"]         = function() local l=game:GetService("Lighting"); l.FogEnd=80; l.FogStart=0; l.FogColor=Color3.fromRGB(200,200,200); showNotif("Fog ON",true) end,
-    ["clearfog"]    = function() local l=game:GetService("Lighting"); l.FogEnd=100000; l.FogStart=0; showNotif("Fog Cleared",true) end,
-    ["lowgrav"]     = function() workspace.Gravity=5;     showNotif("Low Gravity",true) end,
-    ["nograv"]      = function() workspace.Gravity=0;     showNotif("Zero Gravity",true) end,
-    ["highgrav"]    = function() workspace.Gravity=400;   showNotif("High Gravity",true) end,
-    ["normgrav"]    = function() workspace.Gravity=196.2; showNotif("Normal Gravity",true) end,
-    ["invis"]       = function() local c=player.Character; if not c then return end; for _,p in ipairs(c:GetDescendants()) do if p:IsA("BasePart") or p:IsA("Decal") then p.Transparency=1 end end; showNotif("Invisible",true) end,
-    ["vis"]         = function() local c=player.Character; if not c then return end; for _,p in ipairs(c:GetDescendants()) do if p:IsA("BasePart") then p.Transparency=0 end; if p:IsA("Decal") then p.Transparency=0 end end; showNotif("Visible",true) end,
-    ["freeze"]      = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if r then r.Anchored=true end; showNotif("Frozen",true) end,
-    ["unfreeze"]    = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if r then r.Anchored=false end; showNotif("Unfrozen",true) end,
-    ["god"]         = function() RunService.Heartbeat:Connect(function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h.Health=h.MaxHealth end end); showNotif("God Mode ON",true) end,
-    ["fling"]       = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if not r then return end; local bv=Instance.new("BodyVelocity"); bv.MaxForce=Vector3.new(1e5,1e5,1e5); bv.Velocity=Vector3.new(math.random(-80,80),200,math.random(-80,80)); bv.Parent=r; game:GetService("Debris"):AddItem(bv,0.2); showNotif("Flung!",true) end,
-    ["explode"]     = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if not r then return end; local e=Instance.new("Explosion"); e.Position=r.Position; e.BlastRadius=20; e.BlastPressure=0; e.Parent=workspace; showNotif("Explode!",true) end,
-    ["spin"]        = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if not r then return end; task.spawn(function() for _=1,60 do r.CFrame=r.CFrame*CFrame.Angles(0,math.rad(6),0); task.wait(0.01) end end); showNotif("Spin!",true) end,
-    ["reset"]       = function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h.Health=0 end; showNotif("Reset Character",true) end,
-    ["rejoin"]      = function() game:GetService("TeleportService"):Teleport(game.PlaceId,player) end,
-    ["fp"]          = function() player.CameraMaxZoomDistance=0.5; showNotif("First Person",true) end,
-    ["fc"]          = function() player.CameraMaxZoomDistance=400; showNotif("Free Camera",true) end,
-    ["maxjump"]     = function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then pcall(function() h.UseJumpPower=true end); h.JumpPower=500 end; showNotif("Max Jump",true) end,
-    ["resetjump"]   = function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then pcall(function() h.UseJumpPower=true end); h.JumpPower=50 end; showNotif("Reset Jump",true) end,
-    ["spawn"]       = function() local sp=workspace:FindFirstChildOfClass("SpawnLocation"); local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if sp and r then r.CFrame=sp.CFrame+Vector3.new(0,5,0) end; showNotif("Goto Spawn",true) end,
-    ["disco"]       = function() local cols={Color3.fromRGB(255,0,0),Color3.fromRGB(0,255,0),Color3.fromRGB(0,0,255),Color3.fromRGB(255,255,0),Color3.fromRGB(255,0,255),Color3.fromRGB(0,255,255)}; task.spawn(function() local l=game:GetService("Lighting"); for _=1,30 do l.Ambient=cols[math.random(#cols)]; l.OutdoorAmbient=cols[math.random(#cols)]; task.wait(0.15) end; l.Ambient=Color3.fromRGB(70,70,70); l.OutdoorAmbient=Color3.fromRGB(70,70,70) end); showNotif("Disco!",true) end,
-    ["sky pink"]    = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(255,150,200); l.FogEnd=500; l.Ambient=Color3.fromRGB(220,80,160); l.OutdoorAmbient=Color3.fromRGB(220,80,160); showNotif("Pink Sky",true) end,
-    ["sky red"]     = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(180,0,0); l.FogEnd=500; l.Ambient=Color3.fromRGB(120,0,0); l.OutdoorAmbient=Color3.fromRGB(120,0,0); showNotif("Red Sky",true) end,
-    ["sky blue"]    = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(0,100,220); l.FogEnd=500; l.Ambient=Color3.fromRGB(0,50,140); l.OutdoorAmbient=Color3.fromRGB(0,50,140); showNotif("Blue Sky",true) end,
-    ["sky purple"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(100,0,200); l.FogEnd=500; l.Ambient=Color3.fromRGB(60,0,130); l.OutdoorAmbient=Color3.fromRGB(60,0,130); showNotif("Purple Sky",true) end,
-    ["sky green"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(0,180,80); l.FogEnd=500; l.Ambient=Color3.fromRGB(0,100,40); l.OutdoorAmbient=Color3.fromRGB(0,100,40); showNotif("Green Sky",true) end,
-    ["sky orange"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(255,120,30); l.FogEnd=500; l.Ambient=Color3.fromRGB(200,60,0); l.OutdoorAmbient=Color3.fromRGB(200,60,0); showNotif("Orange Sky",true) end,
-    ["sky yellow"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(255,220,50); l.FogEnd=500; l.Ambient=Color3.fromRGB(220,150,0); l.OutdoorAmbient=Color3.fromRGB(220,150,0); showNotif("Yellow Sky",true) end,
-    ["sky cyan"]    = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(0,210,230); l.FogEnd=500; l.Ambient=Color3.fromRGB(0,130,160); l.OutdoorAmbient=Color3.fromRGB(0,130,160); showNotif("Cyan Sky",true) end,
-    ["sky black"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(8,8,12); l.FogEnd=500; l.Ambient=Color3.fromRGB(4,4,8); l.OutdoorAmbient=Color3.fromRGB(4,4,8); showNotif("Black Sky",true) end,
-    ["sky white"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(230,240,255); l.FogEnd=500; l.Ambient=Color3.fromRGB(180,200,240); l.OutdoorAmbient=Color3.fromRGB(180,200,240); showNotif("White Sky",true) end,
-    ["sky galaxy"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(20,0,60); l.FogEnd=500; l.Ambient=Color3.fromRGB(10,0,40); l.OutdoorAmbient=Color3.fromRGB(10,0,40); showNotif("Galaxy Sky",true) end,
-    ["sky reset"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(191,197,200); l.FogEnd=100000; l.FogStart=0; l.Ambient=Color3.fromRGB(70,70,70); l.OutdoorAmbient=Color3.fromRGB(70,70,70); l.GlobalShadows=true; l.Brightness=1; l.ClockTime=14; showNotif("Sky Reset",true) end,
-
-    -- -- Set custom nametag - owner only ---------------------------
-    ["setnametag"]  = function(args)
-        if player.Name ~= "whatdaskib12345" then
-            showNotif("No permission", false)
-            return
-        end
-        if not args or args == "" then
-            showNotif("Usage: ;setnametag name tag", false)
-            return
-        end
-        local targetName, newTag = args:match("^(%S+)%s+(.+)$")
-        if not targetName or not newTag then
-            -- no space = set your own tag
-            -- registerNametag not implemented
-            showNotif("Your tag: " .. args, true)
-            if player.Character then attachTag(player.Character, player, args) end
-            return
-        end
-        local target = nil
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p.Name:lower() == targetName:lower() then target = p; break end
-        end
-        if not target then
-            showNotif("Player not found: " .. targetName, false)
-            return
-        end
-        -- registerNametag not implemented
-        showNotif(targetName .. " tag: " .. newTag, true)
-        if target.Character then attachTag(target.Character, target, newTag) end
-    end,
+local CHAT_COMMANDS = {
+    -- MISC / Movement
+    ["sfly"]        = function() end, -- handled by toggle click below
+    ["baseplate"]   = function() end,
+    ["speed"]       = function() end,
+    ["noclip"]      = function() end,
+    ["zoom"]        = function() end,
+    ["teleport"]    = function() end,
+    ["afk"]         = function() end,
+    -- Combat
+    ["aimlock"]     = function() end,
+    ["hitbox"]      = function() end,
+    ["autoclicker"] = function() end,
+    ["infijump"]    = function() end,
+    -- Visual
+    ["esp"]         = function() end,
+    ["fullbright"]  = function() end,
+    ["hidegui"]     = function() end,
+    ["sad"]         = function() end,
+    -- Player
+    ["facebang"]    = function() end,
+    -- Help
+    ["help"]        = function() end,
 }
 
+-- Map command name → the toggle button to simulate a click on
+-- We store toggle state trackers so we can flip them
+local cmdToggleMap = {}
+
+-- Helper: simulate clicking a toggle by name
+local function fireToggle(name)
+    local btn = cmdToggleMap[name]
+    if btn then btn:Fire() end
+end
+
+-- We use BindableEvents to trigger each toggle from chat
+-- Each toggle registers itself here after creation
+local function registerChatCmd(cmdName, clickFn)
+    local be = Instance.new("BindableEvent")
+    be.Event:Connect(clickFn)
+    CHAT_COMMANDS[cmdName] = be
+end
+
+-- Build command list for ;help
+local helpLines = {
+    "═══ Soul V1 Commands ═══",
+    ";sfly       — Superman Fly",
+    ";baseplate  — Infinite Baseplate",
+    ";speed      — Speed Boost",
+    ";noclip     — No Clip",
+    ";zoom       — Infinite Zoom",
+    ";teleport   — Click Teleport [F]",
+    ";afk        — Anti-AFK",
+    ";aimlock    — Aimlock",
+    ";hitbox     — Hitbox Expander",
+    ";autoclicker— Auto Clicker",
+    ";infijump   — Infinite Jump",
+    ";esp        — Player ESP",
+    ";fullbright — Full Bright",
+    ";hidegui    — Hide GUI",
+    ";sad        — SAD (chat msg)",
+    ";facebang   — Face Bang",
+    ";help       — Show commands",
+}
+
+-- Show help as a small GUI for 9 seconds
 local function showHelpNotif()
+    -- Remove existing help GUI if open
     local existing = player.PlayerGui:FindFirstChild("SoulHelpGui")
     if existing then existing:Destroy() end
+
     local helpGui = Instance.new("ScreenGui")
-    helpGui.Name="SoulHelpGui"; helpGui.ResetOnSpawn=false
-    helpGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling; helpGui.DisplayOrder=997; helpGui.Parent=player.PlayerGui
-    local card=Instance.new("Frame")
-    card.Size=UDim2.new(0,260,0,0); card.Position=UDim2.new(0,16,0.5,-180)
-    card.BackgroundColor3=Color3.fromRGB(14,14,18); card.BackgroundTransparency=0
-    card.BorderSizePixel=0; card.ClipsDescendants=true; card.ZIndex=10; card.Parent=helpGui
-    Instance.new("UICorner",card).CornerRadius=UDim.new(0,12)
-    local cs=Instance.new("UIStroke",card); cs.Color=Color3.fromRGB(139,0,0); cs.Thickness=1.5
-    local hdr=Instance.new("Frame")
-    hdr.Size=UDim2.new(1,0,0,36); hdr.BackgroundColor3=Color3.fromRGB(30,4,4)
-    hdr.BorderSizePixel=0; hdr.ZIndex=11; hdr.Parent=card
-    Instance.new("UICorner",hdr).CornerRadius=UDim.new(0,12)
-    local hdrLbl=Instance.new("TextLabel")
-    hdrLbl.Size=UDim2.new(1,-12,1,0); hdrLbl.Position=UDim2.new(0,12,0,0)
-    hdrLbl.BackgroundTransparency=1; hdrLbl.Text="  Soul V1 - Commands"
-    hdrLbl.TextColor3=Color3.new(1,1,1); hdrLbl.TextSize=13; hdrLbl.Font=Enum.Font.GothamBold
-    hdrLbl.TextXAlignment=Enum.TextXAlignment.Left; hdrLbl.ZIndex=12; hdrLbl.Parent=hdr
-    local commands={
-        {cmd=";sfly",desc="Superman Fly"},{cmd=";baseplate",desc="Infinite Baseplate"},{cmd=";speed",desc="Speed Boost"},{cmd=";noclip",desc="No Clip"},{cmd=";zoom",desc="Infinite Zoom"},{cmd=";teleport",desc="Click Teleport"},{cmd=";afk",desc="Anti-AFK"},{cmd=";aimlock",desc="Aimlock"},{cmd=";hitbox",desc="Hitbox Expander"},{cmd=";autoclicker",desc="Auto Clicker"},{cmd=";infijump",desc="Infinite Jump"},{cmd=";esp",desc="Player ESP"},{cmd=";fullbright",desc="Full Bright"},{cmd=";hidegui",desc="Hide GUI"},{cmd=";sad",desc="SAD Chat"},{cmd=";facebang",desc="Face Bang"},{cmd=";help",desc="Show this menu"},
+    helpGui.Name = "SoulHelpGui"
+    helpGui.ResetOnSpawn = false
+    helpGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    helpGui.DisplayOrder = 997
+    helpGui.Parent = player.PlayerGui
+
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(0, 260, 0, 0)  -- height animates in
+    card.Position = UDim2.new(0, 16, 0.5, -180)
+    card.BackgroundColor3 = Color3.fromRGB(14, 14, 18)
+    card.BackgroundTransparency = 0
+    card.BorderSizePixel = 0
+    card.ClipsDescendants = true
+    card.ZIndex = 10
+    card.Parent = helpGui
+    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 12)
+    local cs = Instance.new("UIStroke", card)
+    cs.Color = Color3.fromRGB(139, 0, 0); cs.Thickness = 1.5
+
+    -- Header
+    local hdr = Instance.new("Frame")
+    hdr.Size = UDim2.new(1, 0, 0, 36)
+    hdr.BackgroundColor3 = Color3.fromRGB(30, 4, 4)
+    hdr.BorderSizePixel = 0; hdr.ZIndex = 11; hdr.Parent = card
+    Instance.new("UICorner", hdr).CornerRadius = UDim.new(0, 12)
+
+    local hdrLbl = Instance.new("TextLabel")
+    hdrLbl.Size = UDim2.new(1, -12, 1, 0); hdrLbl.Position = UDim2.new(0, 12, 0, 0)
+    hdrLbl.BackgroundTransparency = 1; hdrLbl.Text = "⚡  Soul V1 — Commands"
+    hdrLbl.TextColor3 = Color3.new(1, 1, 1); hdrLbl.TextSize = 13
+    hdrLbl.Font = Enum.Font.GothamBold; hdrLbl.TextXAlignment = Enum.TextXAlignment.Left
+    hdrLbl.ZIndex = 12; hdrLbl.Parent = hdr
+
+    -- Command list
+    local commands = {
+        { cmd = ";sfly",        desc = "Superman Fly"       },
+        { cmd = ";baseplate",   desc = "Infinite Baseplate" },
+        { cmd = ";speed",       desc = "Speed Boost"        },
+        { cmd = ";noclip",      desc = "No Clip"            },
+        { cmd = ";zoom",        desc = "Infinite Zoom"      },
+        { cmd = ";teleport",    desc = "Click Teleport"     },
+        { cmd = ";afk",         desc = "Anti-AFK"           },
+        { cmd = ";aimlock",     desc = "Aimlock"            },
+        { cmd = ";hitbox",      desc = "Hitbox Expander"    },
+        { cmd = ";autoclicker", desc = "Auto Clicker"       },
+        { cmd = ";infijump",    desc = "Infinite Jump"      },
+        { cmd = ";esp",         desc = "Player ESP"         },
+        { cmd = ";fullbright",  desc = "Full Bright"        },
+        { cmd = ";hidegui",     desc = "Hide GUI"           },
+        { cmd = ";sad",         desc = "SAD Chat"           },
+        { cmd = ";facebang",    desc = "Face Bang"          },
+        { cmd = ";help",        desc = "Show this menu"     },
     }
-    local rowH=24; local totalH=36+(#commands*rowH)+10
-    for i,c in ipairs(commands) do
-        local row=Instance.new("Frame"); row.Size=UDim2.new(1,-16,0,rowH)
-        row.Position=UDim2.new(0,8,0,36+(i-1)*rowH+4)
-        row.BackgroundTransparency=i%2==0 and 0.85 or 1; row.BackgroundColor3=Color3.fromRGB(30,4,4)
-        row.BorderSizePixel=0; row.ZIndex=11; row.Parent=card
-        Instance.new("UICorner",row).CornerRadius=UDim.new(0,4)
-        local cmdLbl=Instance.new("TextLabel"); cmdLbl.Size=UDim2.new(0,110,1,0); cmdLbl.Position=UDim2.new(0,6,0,0)
-        cmdLbl.BackgroundTransparency=1; cmdLbl.Text=c.cmd; cmdLbl.TextColor3=Color3.fromRGB(255,120,120); cmdLbl.TextSize=11; cmdLbl.Font=Enum.Font.GothamBold; cmdLbl.TextXAlignment=Enum.TextXAlignment.Left; cmdLbl.ZIndex=12; cmdLbl.Parent=row
-        local descLbl=Instance.new("TextLabel"); descLbl.Size=UDim2.new(1,-116,1,0); descLbl.Position=UDim2.new(0,116,0,0)
-        descLbl.BackgroundTransparency=1; descLbl.Text=c.desc; descLbl.TextColor3=Color3.fromRGB(200,200,210); descLbl.TextSize=11; descLbl.Font=Enum.Font.Gotham; descLbl.TextXAlignment=Enum.TextXAlignment.Left; descLbl.ZIndex=12; descLbl.Parent=row
+
+    local rowH = 24
+    local totalH = 36 + (#commands * rowH) + 10
+
+    for i, c in ipairs(commands) do
+        local row = Instance.new("Frame")
+        row.Size = UDim2.new(1, -16, 0, rowH)
+        row.Position = UDim2.new(0, 8, 0, 36 + (i-1) * rowH + 4)
+        row.BackgroundTransparency = i % 2 == 0 and 0.85 or 1
+        row.BackgroundColor3 = Color3.fromRGB(30, 4, 4)
+        row.BorderSizePixel = 0; row.ZIndex = 11; row.Parent = card
+        Instance.new("UICorner", row).CornerRadius = UDim.new(0, 4)
+
+        local cmdLbl = Instance.new("TextLabel")
+        cmdLbl.Size = UDim2.new(0, 110, 1, 0); cmdLbl.Position = UDim2.new(0, 6, 0, 0)
+        cmdLbl.BackgroundTransparency = 1; cmdLbl.Text = c.cmd
+        cmdLbl.TextColor3 = Color3.fromRGB(255, 120, 120); cmdLbl.TextSize = 11
+        cmdLbl.Font = Enum.Font.GothamBold; cmdLbl.TextXAlignment = Enum.TextXAlignment.Left
+        cmdLbl.ZIndex = 12; cmdLbl.Parent = row
+
+        local descLbl = Instance.new("TextLabel")
+        descLbl.Size = UDim2.new(1, -116, 1, 0); descLbl.Position = UDim2.new(0, 116, 0, 0)
+        descLbl.BackgroundTransparency = 1; descLbl.Text = c.desc
+        descLbl.TextColor3 = Color3.fromRGB(200, 200, 210); descLbl.TextSize = 11
+        descLbl.Font = Enum.Font.Gotham; descLbl.TextXAlignment = Enum.TextXAlignment.Left
+        descLbl.ZIndex = 12; descLbl.Parent = row
     end
-    TweenService:Create(card,TweenInfo.new(0.35,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0,260,0,totalH)}):Play()
-    task.delay(9,function()
+
+    -- Animate card open
+    TweenService:Create(card, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Size = UDim2.new(0, 260, 0, totalH) }):Play()
+
+    -- Auto-dismiss after 9 seconds
+    task.delay(9, function()
         if not card.Parent then return end
-        TweenService:Create(card,TweenInfo.new(0.4,Enum.EasingStyle.Quint,Enum.EasingDirection.In),{Size=UDim2.new(0,260,0,0),BackgroundTransparency=1}):Play()
-        TweenService:Create(cs,TweenInfo.new(0.4),{Transparency=1}):Play()
-        task.wait(0.45); pcall(function() helpGui:Destroy() end)
+        TweenService:Create(card, TweenInfo.new(0.4, Enum.EasingStyle.Quint, Enum.EasingDirection.In),
+            { Size = UDim2.new(0, 260, 0, 0), BackgroundTransparency = 1 }):Play()
+        TweenService:Create(cs, TweenInfo.new(0.4), { Transparency = 1 }):Play()
+        task.wait(0.45)
+        pcall(function() helpGui:Destroy() end)
     end)
 end
 
+-- Command state tracker (which commands are currently active)
+local cmdActive = {}
+
+local actions = {
+    ["sfly"]        = function() cmdActive["sfly"] = not cmdActive["sfly"]; if cmdActive["sfly"] then pcall(function() loadstring(game:HttpGet("https://pastebin.com/raw/uxGd6Y83"))() end); showNotif("Superman Fly", true) else local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h.PlatformStand=false end; showNotif("Superman Fly", false) end end,
+    ["baseplate"]   = function() cmdActive["baseplate"] = not cmdActive["baseplate"]; if cmdActive["baseplate"] then pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/likelysmith/EmptyTools/main/script"))() end); showNotif("Infinite Baseplate", true) else showNotif("Infinite Baseplate", false) end end,
+    ["speed"]       = function() cmdActive["speed"] = not cmdActive["speed"]; local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if cmdActive["speed"] then if h then h.WalkSpeed=80 end; showNotif("Speed Boost", true) else if h then h.WalkSpeed=16 end; showNotif("Speed Boost", false) end end,
+    ["noclip"]      = function() cmdActive["noclip"] = not cmdActive["noclip"]; if cmdActive["noclip"] then RunService.Stepped:Connect(function() if not cmdActive["noclip"] then return end; local c=player.Character; if c then for _,p in pairs(c:GetDescendants()) do if p:IsA("BasePart") then p.CanCollide=false end end end end); showNotif("No Clip", true) else showNotif("No Clip", false) end end,
+    ["zoom"]        = function() cmdActive["zoom"] = not cmdActive["zoom"]; if cmdActive["zoom"] then camera.FieldOfView=90; showNotif("Infinite Zoom", true) else camera.FieldOfView=70; showNotif("Infinite Zoom", false) end end,
+    ["teleport"]    = function() cmdActive["teleport"] = not cmdActive["teleport"]; showNotif("Click Teleport [F]", cmdActive["teleport"]) end,
+    ["afk"]         = function() cmdActive["afk"] = not cmdActive["afk"]; if cmdActive["afk"] then local vu=game:GetService("VirtualUser"); player.Idled:Connect(function() if cmdActive["afk"] then vu:Button2Down(Vector2.new(0,0),camera.CFrame); task.wait(0.1); vu:Button2Up(Vector2.new(0,0),camera.CFrame) end end); showNotif("Anti-AFK", true) else showNotif("Anti-AFK", false) end end,
+    ["infijump"]    = function() cmdActive["infijump"] = not cmdActive["infijump"]; if cmdActive["infijump"] then UserInputService.JumpRequest:Connect(function() if not cmdActive["infijump"] then return end; local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h:ChangeState(Enum.HumanoidStateType.Jumping) end end); showNotif("Infinite Jump", true) else showNotif("Infinite Jump", false) end end,
+    ["fullbright"]  = function() cmdActive["fullbright"] = not cmdActive["fullbright"]; local l=game:GetService("Lighting"); if cmdActive["fullbright"] then l.Brightness=10; l.ClockTime=14; l.FogEnd=100000; l.GlobalShadows=false; showNotif("Full Bright", true) else l.Brightness=1; l.GlobalShadows=true; showNotif("Full Bright", false) end end,
+    ["hidegui"]     = function() cmdActive["hidegui"] = not cmdActive["hidegui"]; screenGui.Enabled = not cmdActive["hidegui"]; showNotif("Hide GUI", cmdActive["hidegui"]) end,
+    ["sad"]         = function() showNotif("SAD", true); task.spawn(function() pcall(function() game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SayMessageRequest"):FireServer("Soul V1 Script  in beta version right now","All") end); task.wait(4); pcall(function() game:GetService("ReplicatedStorage"):FindFirstChild("DefaultChatSystemChatEvents"):FindFirstChild("SayMessageRequest"):FireServer("join our comns  QGrXsqqbDc","All") end) end) end,
+    ["facebang"]    = function() cmdActive["facebang"] = not cmdActive["facebang"]; if cmdActive["facebang"] then pcall(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/nomercy0000/face-fuck/refs/heads/main/mic%20up"))() end); showNotif("Face Bang", true) else showNotif("Face Bang", false) end end,
+    ["aimlock"]     = function() cmdActive["aimlock"] = not cmdActive["aimlock"]; showNotif("Aimlock", cmdActive["aimlock"]) end,
+    ["hitbox"]      = function() cmdActive["hitbox"] = not cmdActive["hitbox"]; showNotif("Hitbox Expander", cmdActive["hitbox"]) end,
+    ["autoclicker"] = function() cmdActive["autoclicker"] = not cmdActive["autoclicker"]; showNotif("Auto Clicker", cmdActive["autoclicker"]) end,
+    ["esp"]         = function() cmdActive["esp"] = not cmdActive["esp"]; showNotif("Player ESP", cmdActive["esp"]) end,
+    -- FPS
+    ["fpson"]       = function() for _,v in ipairs(workspace:GetDescendants()) do pcall(function() if v:IsA("ParticleEmitter") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then v.Enabled=false elseif v:IsA("Beam") or v:IsA("Trail") then v.Enabled=false elseif v:IsA("Texture") or v:IsA("Decal") then v.Transparency=1 end end) end; local l=game:GetService("Lighting"); l.GlobalShadows=false; for _,e in ipairs(l:GetChildren()) do if e:IsA("PostEffect") then e.Enabled=false end end; pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Level01 end); showNotif("FPS Boost ON", true) end,
+    ["fpsoff"]      = function() for _,v in ipairs(workspace:GetDescendants()) do pcall(function() if v:IsA("ParticleEmitter") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then v.Enabled=true elseif v:IsA("Beam") or v:IsA("Trail") then v.Enabled=true elseif v:IsA("Texture") or v:IsA("Decal") then v.Transparency=0 end end) end; local l=game:GetService("Lighting"); l.GlobalShadows=true; for _,e in ipairs(l:GetChildren()) do if e:IsA("PostEffect") then e.Enabled=true end end; pcall(function() settings().Rendering.QualityLevel=Enum.QualityLevel.Automatic end); showNotif("FPS Boost OFF", true) end,
+    -- Sound
+    ["mute"]        = function() for _,v in ipairs(workspace:GetDescendants()) do if v:IsA("Sound") then pcall(function() v.Volume=0 end) end end; showNotif("Muted All Sounds", true) end,
+    ["unmute"]      = function() for _,v in ipairs(workspace:GetDescendants()) do if v:IsA("Sound") then pcall(function() v.Volume=1 end) end end; showNotif("Unmuted All Sounds", true) end,
+    -- Time
+    ["day"]         = function() game:GetService("Lighting").ClockTime=14; showNotif("Daytime", true) end,
+    ["night"]       = function() game:GetService("Lighting").ClockTime=0;  showNotif("Night", true) end,
+    ["sunrise"]     = function() game:GetService("Lighting").ClockTime=6;  showNotif("Sunrise", true) end,
+    ["sunset"]      = function() game:GetService("Lighting").ClockTime=18; showNotif("Sunset", true) end,
+    ["fog"]         = function() local l=game:GetService("Lighting"); l.FogEnd=80; l.FogStart=0; l.FogColor=Color3.fromRGB(200,200,200); showNotif("Fog ON", true) end,
+    ["clearfog"]    = function() local l=game:GetService("Lighting"); l.FogEnd=100000; l.FogStart=0; showNotif("Fog Cleared", true) end,
+    -- Gravity
+    ["lowgrav"]     = function() workspace.Gravity=5;     showNotif("Low Gravity", true) end,
+    ["nograv"]      = function() workspace.Gravity=0;     showNotif("Zero Gravity", true) end,
+    ["highgrav"]    = function() workspace.Gravity=400;   showNotif("High Gravity", true) end,
+    ["normgrav"]    = function() workspace.Gravity=196.2; showNotif("Normal Gravity", true) end,
+    -- Character
+    ["invis"]       = function() local c=player.Character; if not c then return end; for _,p in ipairs(c:GetDescendants()) do if p:IsA("BasePart") or p:IsA("Decal") then p.Transparency=1 end end; showNotif("Invisible", true) end,
+    ["vis"]         = function() local c=player.Character; if not c then return end; for _,p in ipairs(c:GetDescendants()) do if p:IsA("BasePart") then p.Transparency=0 end; if p:IsA("Decal") then p.Transparency=0 end end; showNotif("Visible", true) end,
+    ["freeze"]      = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if r then r.Anchored=true end; showNotif("Frozen", true) end,
+    ["unfreeze"]    = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if r then r.Anchored=false end; showNotif("Unfrozen", true) end,
+    ["god"]         = function() RunService.Heartbeat:Connect(function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h.Health=h.MaxHealth end end); showNotif("God Mode ON", true) end,
+    ["fling"]       = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if not r then return end; local bv=Instance.new("BodyVelocity"); bv.MaxForce=Vector3.new(1e5,1e5,1e5); bv.Velocity=Vector3.new(math.random(-80,80),200,math.random(-80,80)); bv.Parent=r; game:GetService("Debris"):AddItem(bv,0.2); showNotif("Flung!", true) end,
+    ["explode"]     = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if not r then return end; local e=Instance.new("Explosion"); e.Position=r.Position; e.BlastRadius=20; e.BlastPressure=0; e.Parent=workspace; showNotif("Explode!", true) end,
+    ["spin"]        = function() local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if not r then return end; task.spawn(function() for _=1,60 do r.CFrame=r.CFrame*CFrame.Angles(0,math.rad(6),0); task.wait(0.01) end end); showNotif("Spin!", true) end,
+    ["reset"]       = function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then h.Health=0 end; showNotif("Reset Character", true) end,
+    ["rejoin"]      = function() game:GetService("TeleportService"):Teleport(game.PlaceId, player) end,
+    ["fp"]          = function() player.CameraMaxZoomDistance=0.5; showNotif("First Person", true) end,
+    ["fc"]          = function() player.CameraMaxZoomDistance=400; showNotif("Free Camera", true) end,
+    ["maxjump"]     = function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then pcall(function() h.UseJumpPower=true end); h.JumpPower=500 end; showNotif("Max Jump", true) end,
+    ["resetjump"]   = function() local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then pcall(function() h.UseJumpPower=true end); h.JumpPower=50 end; showNotif("Reset Jump", true) end,
+    ["spawn"]       = function() local sp=workspace:FindFirstChildOfClass("SpawnLocation"); local r=player.Character and player.Character:FindFirstChild("HumanoidRootPart"); if sp and r then r.CFrame=sp.CFrame+Vector3.new(0,5,0) end; showNotif("Goto Spawn", true) end,
+    ["disco"]       = function() local cols={Color3.fromRGB(255,0,0),Color3.fromRGB(0,255,0),Color3.fromRGB(0,0,255),Color3.fromRGB(255,255,0),Color3.fromRGB(255,0,255),Color3.fromRGB(0,255,255)}; task.spawn(function() local l=game:GetService("Lighting"); for _=1,30 do l.Ambient=cols[math.random(#cols)]; l.OutdoorAmbient=cols[math.random(#cols)]; task.wait(0.15) end; l.Ambient=Color3.fromRGB(70,70,70); l.OutdoorAmbient=Color3.fromRGB(70,70,70) end); showNotif("Disco!", true) end,
+    -- Sky colours
+    ["sky pink"]    = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(255,150,200); l.FogEnd=500; l.Ambient=Color3.fromRGB(220,80,160);  l.OutdoorAmbient=Color3.fromRGB(220,80,160);  showNotif("Pink Sky", true) end,
+    ["sky red"]     = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(180,0,0);     l.FogEnd=500; l.Ambient=Color3.fromRGB(120,0,0);      l.OutdoorAmbient=Color3.fromRGB(120,0,0);      showNotif("Red Sky", true) end,
+    ["sky blue"]    = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(0,100,220);   l.FogEnd=500; l.Ambient=Color3.fromRGB(0,50,140);     l.OutdoorAmbient=Color3.fromRGB(0,50,140);     showNotif("Blue Sky", true) end,
+    ["sky purple"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(100,0,200);   l.FogEnd=500; l.Ambient=Color3.fromRGB(60,0,130);     l.OutdoorAmbient=Color3.fromRGB(60,0,130);     showNotif("Purple Sky", true) end,
+    ["sky green"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(0,180,80);    l.FogEnd=500; l.Ambient=Color3.fromRGB(0,100,40);     l.OutdoorAmbient=Color3.fromRGB(0,100,40);     showNotif("Green Sky", true) end,
+    ["sky orange"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(255,120,30);  l.FogEnd=500; l.Ambient=Color3.fromRGB(200,60,0);     l.OutdoorAmbient=Color3.fromRGB(200,60,0);     showNotif("Orange Sky", true) end,
+    ["sky yellow"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(255,220,50);  l.FogEnd=500; l.Ambient=Color3.fromRGB(220,150,0);    l.OutdoorAmbient=Color3.fromRGB(220,150,0);    showNotif("Yellow Sky", true) end,
+    ["sky cyan"]    = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(0,210,230);   l.FogEnd=500; l.Ambient=Color3.fromRGB(0,130,160);    l.OutdoorAmbient=Color3.fromRGB(0,130,160);    showNotif("Cyan Sky", true) end,
+    ["sky black"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(8,8,12);      l.FogEnd=500; l.Ambient=Color3.fromRGB(4,4,8);        l.OutdoorAmbient=Color3.fromRGB(4,4,8);        showNotif("Black Sky", true) end,
+    ["sky white"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(230,240,255); l.FogEnd=500; l.Ambient=Color3.fromRGB(180,200,240);  l.OutdoorAmbient=Color3.fromRGB(180,200,240);  showNotif("White Sky", true) end,
+    ["sky galaxy"]  = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(20,0,60);     l.FogEnd=500; l.Ambient=Color3.fromRGB(10,0,40);      l.OutdoorAmbient=Color3.fromRGB(10,0,40);      showNotif("Galaxy Sky", true) end,
+    ["sky reset"]   = function() local l=game:GetService("Lighting"); l.FogColor=Color3.fromRGB(191,197,200); l.FogEnd=100000; l.FogStart=0; l.Ambient=Color3.fromRGB(70,70,70); l.OutdoorAmbient=Color3.fromRGB(70,70,70); l.GlobalShadows=true; l.Brightness=1; l.ClockTime=14; showNotif("Sky Reset", true) end,
+}
+
+-- The actual command handler
 local function handleChatCommand(msg)
-    local trimmed = msg:lower():gsub("^"..chatCommandPrefix,""):gsub("^%s+",""):gsub("%s+$","")
+    local trimmed = msg:lower():gsub("^"..chatCommandPrefix, ""):gsub("^%s+", ""):gsub("%s+$", "")
     if trimmed == "help" then showHelpNotif(); return true end
-    -- Extract command word and optional args
-    local cmd  = trimmed:match("^(%S+)")
-    local args = trimmed:match("^%S+%s+(.+)$")
-    -- Try full string first (handles multi-word commands like "sky pink"), then just cmd word
-    local action = actions[trimmed] or actions[cmd]
-    if action then action(args); return true end
+    local action = actions[trimmed] or actions[trimmed:match("^(%S+)")]
+    if action then action(); return true end
     return false
 end
 
+-- Hook into chat: intercept before message is sent
+-- Works for both legacy and TextChatService
 task.spawn(function()
+    -- Method 1: Legacy chat (most games)
     pcall(function()
-        local chatGui = player.PlayerGui:WaitForChild("BubbleChat",3) or player.PlayerGui:WaitForChild("Chat",3)
-        local chatFrame = chatGui and chatGui:FindFirstChildWhichIsA("Frame",true)
+        local chatGui = player.PlayerGui:WaitForChild("BubbleChat", 3)
+                     or player.PlayerGui:WaitForChild("Chat", 3)
+        local chatFrame = chatGui and chatGui:FindFirstChildWhichIsA("Frame", true)
         if chatFrame then
-            local chatBox = chatFrame:FindFirstChildWhichIsA("TextBox",true)
+            local chatBox = chatFrame:FindFirstChildWhichIsA("TextBox", true)
             if chatBox then
                 chatBox.FocusLost:Connect(function(enter)
                     if enter then
                         local msg = chatBox.Text
-                        if msg:sub(1,1)==chatCommandPrefix then handleChatCommand(msg); chatBox.Text="" end
+                        if msg:sub(1,1) == chatCommandPrefix then
+                            handleChatCommand(msg)
+                            chatBox.Text = ""
+                        end
                     end
                 end)
             end
         end
     end)
+
+    -- Method 2: TextChatService (newer games)
     pcall(function()
-        local tcs=game:GetService("TextChatService")
-        if tcs.ChatVersion==Enum.ChatVersion.TextChatService then
+        local tcs = game:GetService("TextChatService")
+        if tcs.ChatVersion == Enum.ChatVersion.TextChatService then
             tcs.SendingMessage:Connect(function(msg)
-                if msg.Text:sub(1,1)==chatCommandPrefix then handleChatCommand(msg.Text) end
+                if msg.Text:sub(1,1) == chatCommandPrefix then
+                    handleChatCommand(msg.Text)
+                end
             end)
         end
     end)
 end)
 
+-- Also hook UserInputService for Enter key chat detection as fallback
+local chatActive = false
 UserInputService.InputBegan:Connect(function(inp, gp)
-    if gp then return end
-    if inp.KeyCode==Enum.KeyCode.Slash or inp.KeyCode==Enum.KeyCode.Return then
-        local focused=UserInputService:GetFocusedTextBox()
+    if inp.KeyCode == Enum.KeyCode.Slash or inp.KeyCode == Enum.KeyCode.Return then
+        -- Check if a chatbox is focused
+        local focused = UserInputService:GetFocusedTextBox()
         if focused then
             focused.FocusLost:Connect(function(enter)
                 if enter then
-                    local msg=focused.Text
-                    if msg:sub(1,1)==chatCommandPrefix then
-                        if handleChatCommand(msg) then task.wait(0.05); pcall(function() focused.Text="" end) end
+                    local msg = focused.Text
+                    if msg:sub(1,1) == chatCommandPrefix then
+                        if handleChatCommand(msg) then
+                            task.wait(0.05)
+                            pcall(function() focused.Text = "" end)
+                        end
                     end
                 end
             end)
@@ -2530,6 +3060,8 @@ end)
 
 
 -- ===================== KEY SYSTEM =====================
+wrapper.Visible = false
+
 local VALID_KEY      = "key12345"
 local PERM_KEY       = "key123455667@"
 local KEY_DURATION   = 172800
@@ -2551,187 +3083,365 @@ local function isKeyExpired()
     return os.time() > expiry
 end
 
-local function _showMainGui()
-    wrapper.Visible = true; wrapper.Size = UDim2.new(0,0,0,0); wrapper.Position = UDim2.new(0.5,0,1.5,0)
-    sidebar.Size = UDim2.new(0,0,1,0); mainPanel.Size = UDim2.new(0,0,1,0); navbar.Size = UDim2.new(1,0,0,0)
-    openSound:Play()
-    TweenService:Create(wrapper,TweenInfo.new(0.55,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0,UI_W,0,UI_H),Position=UDim2.new(0.5,-UI_W/2,0.5,-UI_H/2)}):Play()
-    task.delay(0.28,function() TweenService:Create(navbar,TweenInfo.new(0.25,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),{Size=UDim2.new(1,0,0,NAV_H)}):Play() end)
-    task.delay(0.38,function() TweenService:Create(sidebar,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),{Size=UDim2.new(0,SIDE_W,1,0)}):Play() end)
-    task.delay(0.52,function()
-        TweenService:Create(mainPanel,TweenInfo.new(0.3,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),{Size=UDim2.new(0,MAIN_W,1,0)}):Play()
-        task.delay(0.2, function() switchTab("Home") end)
+-- ── BLOOD KEY GUI ──────────────────────────────────────────────
+local keyGui = Instance.new("ScreenGui")
+keyGui.Name = "SoulKeySystem"; keyGui.ResetOnSpawn = false
+keyGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+keyGui.DisplayOrder = 999; keyGui.Parent = gui
+
+-- Full screen dark overlay
+local ksOverlay = Instance.new("Frame")
+ksOverlay.Size = UDim2.new(1,0,1,0); ksOverlay.BackgroundColor3 = Color3.fromRGB(0,0,0)
+ksOverlay.BackgroundTransparency = 0.35; ksOverlay.BorderSizePixel = 0; ksOverlay.Parent = keyGui
+
+-- Blood drip canvas (behind card)
+local dripCanvas = Instance.new("Frame")
+dripCanvas.Size = UDim2.new(1,0,1,0); dripCanvas.BackgroundTransparency = 1
+dripCanvas.BorderSizePixel = 0; dripCanvas.ZIndex = 1; dripCanvas.Parent = keyGui
+
+-- Spawn blood drips
+local dripActive = true
+local function spawnDrip()
+    if not dripActive then return end
+    local drip = Instance.new("Frame")
+    local xPos = math.random(2, 98) / 100
+    drip.Size = UDim2.new(0, math.random(4, 10), 0, 0)
+    drip.Position = UDim2.new(xPos, 0, 0, 0)
+    drip.BackgroundColor3 = Color3.fromRGB(math.random(120,180), 0, 0)
+    drip.BackgroundTransparency = math.random(0, 3) / 10
+    drip.BorderSizePixel = 0; drip.ZIndex = 2; drip.Parent = dripCanvas
+    Instance.new("UICorner", drip).CornerRadius = UDim.new(0, 4)
+
+    -- Drip drop at bottom
+    local drop = Instance.new("Frame")
+    drop.Size = UDim2.new(1.5, 0, 0, 0); drop.Position = UDim2.new(-0.25, 0, 1, 0)
+    drop.BackgroundColor3 = drip.BackgroundColor3; drop.BorderSizePixel = 0
+    drop.ZIndex = 2; drop.Parent = drip
+    Instance.new("UICorner", drop).CornerRadius = UDim.new(1, 0)
+
+    local targetH = math.random(60, 280)
+    local speed   = math.random(18, 40) / 10
+
+    task.spawn(function()
+        -- Grow downward slowly
+        local start = tick()
+        while dripActive and drip.Parent and (tick() - start) < speed do
+            local pct = (tick() - start) / speed
+            local h = targetH * pct
+            drip.Size = UDim2.new(0, drip.Size.X.Offset, 0, h)
+            drop.Size = UDim2.new(1.5, 0, 0, drip.Size.X.Offset * 1.2)
+            task.wait(0.03)
+        end
+        -- Pause at bottom then fade
+        task.wait(math.random(8, 18) / 10)
+        if drip.Parent then
+            TweenService:Create(drip, TweenInfo.new(0.6), { BackgroundTransparency = 1 }):Play()
+            TweenService:Create(drop, TweenInfo.new(0.6), { BackgroundTransparency = 1 }):Play()
+            task.wait(0.65)
+            pcall(function() drip:Destroy() end)
+        end
     end)
 end
 
-wrapper.Visible = false
+task.spawn(function()
+    for _ = 1, 12 do spawnDrip(); task.wait(0.18) end
+    while dripActive and keyGui.Parent do
+        task.wait(math.random(4, 12) / 10)
+        spawnDrip()
+    end
+end)
 
--- Key screen for everyone
-local keyGui = Instance.new("ScreenGui")
-keyGui.Name="SoulKeySystem"; keyGui.ResetOnSpawn=false
-keyGui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling; keyGui.DisplayOrder=999; keyGui.Parent=gui
+-- Main card
+local ksCard = Instance.new("Frame")
+ksCard.Size = UDim2.new(0, 440, 0, 0)
+ksCard.Position = UDim2.new(0.5, -220, 0.5, -160)
+ksCard.BackgroundColor3 = Color3.fromRGB(8, 0, 0)
+ksCard.BorderSizePixel = 0; ksCard.ClipsDescendants = false
+ksCard.ZIndex = 5; ksCard.Parent = keyGui
+Instance.new("UICorner", ksCard).CornerRadius = UDim.new(0, 16)
+local ksStroke = Instance.new("UIStroke", ksCard)
+ksStroke.Color = Color3.fromRGB(180, 0, 0); ksStroke.Thickness = 2; ksStroke.Transparency = 0.1
 
-local ksOverlay=Instance.new("Frame")
-ksOverlay.Size=UDim2.new(1,0,1,0); ksOverlay.BackgroundColor3=Color3.fromRGB(0,0,0)
-ksOverlay.BackgroundTransparency=0.5; ksOverlay.BorderSizePixel=0; ksOverlay.Parent=keyGui
+-- Inner card drip effect (blood along top edge)
+local cardDripRow = Instance.new("Frame")
+cardDripRow.Size = UDim2.new(1,0,0,6); cardDripRow.Position = UDim2.new(0,0,0,0)
+cardDripRow.BackgroundColor3 = Color3.fromRGB(160,0,0); cardDripRow.BorderSizePixel = 0
+cardDripRow.ZIndex = 6; cardDripRow.Parent = ksCard
 
-local ksCard=Instance.new("Frame")
-ksCard.Size=UDim2.new(0,320,0,0); ksCard.Position=UDim2.new(0.5,-160,0.5,-110)
-ksCard.BackgroundColor3=Color3.fromRGB(18,18,22); ksCard.BorderSizePixel=0
-ksCard.ClipsDescendants=true; ksCard.ZIndex=2; ksCard.Parent=keyGui
-Instance.new("UICorner",ksCard).CornerRadius=UDim.new(0,12)
-local ksStroke=Instance.new("UIStroke",ksCard); ksStroke.Color=Color3.fromRGB(139,0,0); ksStroke.Thickness=1.5; ksStroke.Transparency=0.3
+-- Left panel (logo side)
+local leftPanel = Instance.new("Frame")
+leftPanel.Size = UDim2.new(0, 130, 1, 0); leftPanel.Position = UDim2.new(0, 0, 0, 0)
+leftPanel.BackgroundColor3 = Color3.fromRGB(12, 0, 0); leftPanel.BorderSizePixel = 0
+leftPanel.ZIndex = 6; leftPanel.Parent = ksCard
+Instance.new("UICorner", leftPanel).CornerRadius = UDim.new(0, 16)
 
-local ksHeader=Instance.new("Frame")
-ksHeader.Size=UDim2.new(1,0,0,52); ksHeader.BackgroundColor3=Color3.fromRGB(10,10,14)
-ksHeader.BorderSizePixel=0; ksHeader.ZIndex=3; ksHeader.Parent=ksCard
-local ksTitleLbl=Instance.new("TextLabel")
-ksTitleLbl.Size=UDim2.new(1,-16,0,26); ksTitleLbl.Position=UDim2.new(0,16,0,8)
-ksTitleLbl.BackgroundTransparency=1; ksTitleLbl.Text="SOUL GUI"
-ksTitleLbl.TextColor3=Color3.new(1,1,1); ksTitleLbl.TextSize=17; ksTitleLbl.Font=Enum.Font.GothamBold
-ksTitleLbl.TextXAlignment=Enum.TextXAlignment.Left; ksTitleLbl.ZIndex=4; ksTitleLbl.Parent=ksHeader
-local ksSubLbl=Instance.new("TextLabel")
-ksSubLbl.Size=UDim2.new(1,-16,0,16); ksSubLbl.Position=UDim2.new(0,16,0,32)
-ksSubLbl.BackgroundTransparency=1; ksSubLbl.Text="Key System  by Soul"
-ksSubLbl.TextColor3=Color3.fromRGB(120,120,140); ksSubLbl.TextSize=11; ksSubLbl.Font=Enum.Font.Gotham
-ksSubLbl.TextXAlignment=Enum.TextXAlignment.Left; ksSubLbl.ZIndex=4; ksSubLbl.Parent=ksHeader
+-- Logo label
+local logoLbl = Instance.new("TextLabel")
+logoLbl.Size = UDim2.new(1,-10,0,60); logoLbl.Position = UDim2.new(0,5,0,40)
+logoLbl.BackgroundTransparency = 1; logoLbl.Text = "S"
+logoLbl.TextColor3 = Color3.fromRGB(220,0,0); logoLbl.TextSize = 56
+logoLbl.Font = Enum.Font.GothamBlack; logoLbl.TextXAlignment = Enum.TextXAlignment.Center
+logoLbl.ZIndex = 7; logoLbl.Parent = leftPanel
 
-local ksBody=Instance.new("Frame")
-ksBody.Size=UDim2.new(1,0,1,-52); ksBody.Position=UDim2.new(0,0,0,52)
-ksBody.BackgroundTransparency=1; ksBody.ZIndex=3; ksBody.Parent=ksCard
+-- Pulsing glow on S
+TweenService:Create(logoLbl,
+    TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true),
+    { TextColor3 = Color3.fromRGB(255, 60, 60) }
+):Play()
 
-local ksCheckLbl=Instance.new("TextLabel")
-ksCheckLbl.Size=UDim2.new(1,-24,0,22); ksCheckLbl.Position=UDim2.new(0,12,0,14)
-ksCheckLbl.BackgroundTransparency=1; ksCheckLbl.Text="Checking..."
-ksCheckLbl.TextColor3=Color3.fromRGB(160,160,180); ksCheckLbl.TextSize=13; ksCheckLbl.Font=Enum.Font.Gotham
-ksCheckLbl.TextXAlignment=Enum.TextXAlignment.Left; ksCheckLbl.TextTransparency=1; ksCheckLbl.ZIndex=4; ksCheckLbl.Parent=ksBody
+local scriptNameLbl = Instance.new("TextLabel")
+scriptNameLbl.Size = UDim2.new(1,-8,0,22); scriptNameLbl.Position = UDim2.new(0,4,0,100)
+scriptNameLbl.BackgroundTransparency = 1; scriptNameLbl.Text = "SOUL V1"
+scriptNameLbl.TextColor3 = Color3.new(1,1,1); scriptNameLbl.TextSize = 14
+scriptNameLbl.Font = Enum.Font.GothamBlack; scriptNameLbl.TextXAlignment = Enum.TextXAlignment.Center
+scriptNameLbl.ZIndex = 7; scriptNameLbl.Parent = leftPanel
 
-local ksWhitelistLbl=Instance.new("TextLabel")
-ksWhitelistLbl.Size=UDim2.new(1,-24,0,22); ksWhitelistLbl.Position=UDim2.new(0,12,0,40)
-ksWhitelistLbl.BackgroundTransparency=1; ksWhitelistLbl.Text="Enter your key below"
-ksWhitelistLbl.TextColor3=Color3.fromRGB(80,220,100); ksWhitelistLbl.TextSize=13; ksWhitelistLbl.Font=Enum.Font.GothamSemibold
-ksWhitelistLbl.TextXAlignment=Enum.TextXAlignment.Left; ksWhitelistLbl.TextTransparency=1; ksWhitelistLbl.ZIndex=4; ksWhitelistLbl.Parent=ksBody
+local byLbl = Instance.new("TextLabel")
+byLbl.Size = UDim2.new(1,-8,0,16); byLbl.Position = UDim2.new(0,4,0,122)
+byLbl.BackgroundTransparency = 1; byLbl.Text = "by Soul"
+byLbl.TextColor3 = Color3.fromRGB(160,50,50); byLbl.TextSize = 11
+byLbl.Font = Enum.Font.Gotham; byLbl.TextXAlignment = Enum.TextXAlignment.Center
+byLbl.ZIndex = 7; byLbl.Parent = leftPanel
 
-local ksInputBg=Instance.new("Frame")
-ksInputBg.Size=UDim2.new(1,-24,0,40); ksInputBg.Position=UDim2.new(0,12,0,70)
-ksInputBg.BackgroundColor3=Color3.fromRGB(28,28,34); ksInputBg.BorderSizePixel=0; ksInputBg.ZIndex=4; ksInputBg.Parent=ksBody
-Instance.new("UICorner",ksInputBg).CornerRadius=UDim.new(0,8)
-local ksInputStroke=Instance.new("UIStroke",ksInputBg)
-ksInputStroke.Color=Color3.fromRGB(80,80,100); ksInputStroke.Thickness=1.5; ksInputStroke.Transparency=0.3
+-- Version + Executor info at bottom of left panel
+local versionLbl = Instance.new("TextLabel")
+versionLbl.Size = UDim2.new(1,-8,0,14); versionLbl.Position = UDim2.new(0,4,1,-60)
+versionLbl.BackgroundTransparency = 1; versionLbl.Text = "Version"
+versionLbl.TextColor3 = Color3.fromRGB(100,30,30); versionLbl.TextSize = 10
+versionLbl.Font = Enum.Font.GothamBold; versionLbl.TextXAlignment = Enum.TextXAlignment.Center
+versionLbl.ZIndex = 7; versionLbl.Parent = leftPanel
 
-local ksKeyBox=Instance.new("TextBox")
-ksKeyBox.Size=UDim2.new(1,-16,1,0); ksKeyBox.Position=UDim2.new(0,8,0,0)
-ksKeyBox.BackgroundTransparency=1; ksKeyBox.PlaceholderText="Insert key here..."
-ksKeyBox.PlaceholderColor3=Color3.fromRGB(90,90,110); ksKeyBox.Text=""
-ksKeyBox.TextColor3=Color3.new(1,1,1); ksKeyBox.TextSize=14; ksKeyBox.Font=Enum.Font.Gotham
-ksKeyBox.ClearTextOnFocus=false; ksKeyBox.TextXAlignment=Enum.TextXAlignment.Left; ksKeyBox.ZIndex=5; ksKeyBox.Parent=ksInputBg
+local versionValLbl = Instance.new("TextLabel")
+versionValLbl.Size = UDim2.new(1,-8,0,18); versionValLbl.Position = UDim2.new(0,4,1,-46)
+versionValLbl.BackgroundTransparency = 1; versionValLbl.Text = "v1"
+versionValLbl.TextColor3 = Color3.new(1,1,1); versionValLbl.TextSize = 13
+versionValLbl.Font = Enum.Font.GothamBold; versionValLbl.TextXAlignment = Enum.TextXAlignment.Center
+versionValLbl.ZIndex = 7; versionValLbl.Parent = leftPanel
 
-local ksSubmitBtn=Instance.new("TextButton")
-ksSubmitBtn.Size=UDim2.new(1,-24,0,38); ksSubmitBtn.Position=UDim2.new(0,12,0,118)
-ksSubmitBtn.BackgroundColor3=Color3.fromRGB(139,0,0); ksSubmitBtn.Text="Submit Key"
-ksSubmitBtn.TextColor3=Color3.new(1,1,1); ksSubmitBtn.TextSize=14; ksSubmitBtn.Font=Enum.Font.GothamBold
-ksSubmitBtn.ZIndex=4; ksSubmitBtn.Parent=ksBody
-Instance.new("UICorner",ksSubmitBtn).CornerRadius=UDim.new(0,8)
+local execLbl = Instance.new("TextLabel")
+execLbl.Size = UDim2.new(1,-8,0,14); execLbl.Position = UDim2.new(0,4,1,-28)
+execLbl.BackgroundTransparency = 1; execLbl.Text = "Executor"
+execLbl.TextColor3 = Color3.fromRGB(100,30,30); execLbl.TextSize = 10
+execLbl.Font = Enum.Font.GothamBold; execLbl.TextXAlignment = Enum.TextXAlignment.Center
+execLbl.ZIndex = 7; execLbl.Parent = leftPanel
+
+local execValLbl = Instance.new("TextLabel")
+execValLbl.Size = UDim2.new(1,-8,0,18); execValLbl.Position = UDim2.new(0,4,1,-14)
+execValLbl.BackgroundTransparency = 1; execValLbl.Text = "Xeno"
+execValLbl.TextColor3 = Color3.new(1,1,1); execValLbl.TextSize = 13
+execValLbl.Font = Enum.Font.GothamBold; execValLbl.TextXAlignment = Enum.TextXAlignment.Center
+execValLbl.ZIndex = 7; execValLbl.Parent = leftPanel
+
+-- Small blood dot below S logo
+local logoDot = Instance.new("Frame")
+logoDot.Size = UDim2.new(0,8,0,8); logoDot.Position = UDim2.new(0.5,-4,0,163)
+logoDot.BackgroundColor3 = Color3.fromRGB(200,0,0); logoDot.BorderSizePixel=0; logoDot.ZIndex=7; logoDot.Parent=leftPanel
+Instance.new("UICorner",logoDot).CornerRadius=UDim.new(1,0)
+TweenService:Create(logoDot, TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut,-1,true),
+    { BackgroundColor3 = Color3.fromRGB(255,40,40) }):Play()
+
+-- Right panel (auth side)
+local rightPanel = Instance.new("Frame")
+rightPanel.Size = UDim2.new(1,-138,1,-8); rightPanel.Position = UDim2.new(0,134,0,4)
+rightPanel.BackgroundTransparency = 1; rightPanel.BorderSizePixel = 0
+rightPanel.ZIndex = 6; rightPanel.Parent = ksCard
+
+-- Authentication title
+local authTitle = Instance.new("TextLabel")
+authTitle.Size = UDim2.new(1,0,0,26); authTitle.Position = UDim2.new(0,0,0,16)
+authTitle.BackgroundTransparency = 1; authTitle.Text = "Authentication"
+authTitle.TextColor3 = Color3.new(1,1,1); authTitle.TextSize = 18
+authTitle.Font = Enum.Font.GothamBlack; authTitle.TextXAlignment = Enum.TextXAlignment.Left
+authTitle.ZIndex = 7; authTitle.Parent = rightPanel
+
+local authSubTitle = Instance.new("TextLabel")
+authSubTitle.Size = UDim2.new(1,0,0,16); authSubTitle.Position = UDim2.new(0,0,0,42)
+authSubTitle.BackgroundTransparency = 1; authSubTitle.Text = "Soul V1 — Key Required"
+authSubTitle.TextColor3 = Color3.fromRGB(160,50,50); authSubTitle.TextSize = 12
+authSubTitle.Font = Enum.Font.Gotham; authSubTitle.TextXAlignment = Enum.TextXAlignment.Left
+authSubTitle.ZIndex = 7; authSubTitle.Parent = rightPanel
+
+-- Access Granted banner (hidden initially)
+local accessBanner = Instance.new("Frame")
+accessBanner.Size = UDim2.new(1,-4,0,56); accessBanner.Position = UDim2.new(0,0,0,68)
+accessBanner.BackgroundColor3 = Color3.fromRGB(100,0,0)
+accessBanner.BackgroundTransparency = 1; accessBanner.BorderSizePixel = 0
+accessBanner.ZIndex = 7; accessBanner.Visible = false; accessBanner.Parent = rightPanel
+Instance.new("UICorner", accessBanner).CornerRadius = UDim.new(0, 10)
+
+local accessGrantedLbl = Instance.new("TextLabel")
+accessGrantedLbl.Size = UDim2.new(1,-16,0,28); accessGrantedLbl.Position = UDim2.new(0,12,0,6)
+accessGrantedLbl.BackgroundTransparency = 1; accessGrantedLbl.Text = "Access Granted!"
+accessGrantedLbl.TextColor3 = Color3.new(1,1,1); accessGrantedLbl.TextSize = 18
+accessGrantedLbl.Font = Enum.Font.GothamBlack; accessGrantedLbl.TextXAlignment = Enum.TextXAlignment.Left
+accessGrantedLbl.ZIndex = 8; accessGrantedLbl.Parent = accessBanner
+
+local accessSubLbl = Instance.new("TextLabel")
+accessSubLbl.Size = UDim2.new(1,-16,0,16); accessSubLbl.Position = UDim2.new(0,12,0,32)
+accessSubLbl.BackgroundTransparency = 1; accessSubLbl.Text = "Authenticated"
+accessSubLbl.TextColor3 = Color3.fromRGB(255,160,160); accessSubLbl.TextSize = 12
+accessSubLbl.Font = Enum.Font.Gotham; accessSubLbl.TextXAlignment = Enum.TextXAlignment.Left
+accessSubLbl.ZIndex = 8; accessSubLbl.Parent = accessBanner
+
+-- Status dot + text
+local statusRow = Instance.new("Frame")
+statusRow.Size = UDim2.new(1,-4,0,22); statusRow.Position = UDim2.new(0,0,0,68)
+statusRow.BackgroundTransparency = 1; statusRow.ZIndex = 7; statusRow.Parent = rightPanel
+
+local statusDot = Instance.new("Frame")
+statusDot.Size = UDim2.new(0,10,0,10); statusDot.Position = UDim2.new(0,0,0.5,-5)
+statusDot.BackgroundColor3 = Color3.fromRGB(200,200,200); statusDot.BorderSizePixel=0; statusDot.ZIndex=8; statusDot.Parent=statusRow
+Instance.new("UICorner",statusDot).CornerRadius=UDim.new(1,0)
+
+local ksCheckLbl = Instance.new("TextLabel")
+ksCheckLbl.Size = UDim2.new(1,-18,1,0); ksCheckLbl.Position = UDim2.new(0,16,0,0)
+ksCheckLbl.BackgroundTransparency = 1; ksCheckLbl.Text = "Checking whitelist..."
+ksCheckLbl.TextColor3 = Color3.fromRGB(200,200,200); ksCheckLbl.TextSize = 13
+ksCheckLbl.Font = Enum.Font.GothamSemibold; ksCheckLbl.TextXAlignment = Enum.TextXAlignment.Left
+ksCheckLbl.TextTransparency = 1; ksCheckLbl.ZIndex = 8; ksCheckLbl.Parent = statusRow
+
+-- Key input area
+local ksInputBg = Instance.new("Frame")
+ksInputBg.Size = UDim2.new(1,-4,0,42); ksInputBg.Position = UDim2.new(0,0,0,102)
+ksInputBg.BackgroundColor3 = Color3.fromRGB(20,3,3); ksInputBg.BorderSizePixel = 0
+ksInputBg.ZIndex = 7; ksInputBg.Parent = rightPanel
+Instance.new("UICorner", ksInputBg).CornerRadius = UDim.new(0, 8)
+local ksInputStroke = Instance.new("UIStroke", ksInputBg)
+ksInputStroke.Color = Color3.fromRGB(100,0,0); ksInputStroke.Thickness = 1.5; ksInputStroke.Transparency = 0.3
+
+local ksKeyBox = Instance.new("TextBox")
+ksKeyBox.Size = UDim2.new(1,-16,1,0); ksKeyBox.Position = UDim2.new(0,8,0,0)
+ksKeyBox.BackgroundTransparency = 1; ksKeyBox.PlaceholderText = "Insert key here..."
+ksKeyBox.PlaceholderColor3 = Color3.fromRGB(100,40,40); ksKeyBox.Text = ""
+ksKeyBox.TextColor3 = Color3.new(1,1,1); ksKeyBox.TextSize = 14; ksKeyBox.Font = Enum.Font.Gotham
+ksKeyBox.ClearTextOnFocus = false; ksKeyBox.TextXAlignment = Enum.TextXAlignment.Left
+ksKeyBox.ZIndex = 8; ksKeyBox.Parent = ksInputBg
+
+-- Submit button
+local ksSubmitBtn = Instance.new("TextButton")
+ksSubmitBtn.Size = UDim2.new(1,-4,0,42); ksSubmitBtn.Position = UDim2.new(0,0,0,152)
+ksSubmitBtn.BackgroundColor3 = Color3.fromRGB(140,0,0); ksSubmitBtn.Text = "Submit Key"
+ksSubmitBtn.TextColor3 = Color3.new(1,1,1); ksSubmitBtn.TextSize = 15; ksSubmitBtn.Font = Enum.Font.GothamBold
+ksSubmitBtn.ZIndex = 7; ksSubmitBtn.Parent = rightPanel
+Instance.new("UICorner", ksSubmitBtn).CornerRadius = UDim.new(0, 8)
 ksSubmitBtn.MouseEnter:Connect(function() TweenService:Create(ksSubmitBtn,TweenInfo.new(0.12),{BackgroundColor3=Color3.fromRGB(200,10,10)}):Play() end)
-ksSubmitBtn.MouseLeave:Connect(function() TweenService:Create(ksSubmitBtn,TweenInfo.new(0.12),{BackgroundColor3=Color3.fromRGB(139,0,0)}):Play() end)
+ksSubmitBtn.MouseLeave:Connect(function() TweenService:Create(ksSubmitBtn,TweenInfo.new(0.12),{BackgroundColor3=Color3.fromRGB(140,0,0)}):Play() end)
 
-local ksStatusLbl=Instance.new("TextLabel")
-ksStatusLbl.Size=UDim2.new(1,-24,0,20); ksStatusLbl.Position=UDim2.new(0,12,0,164)
-ksStatusLbl.BackgroundTransparency=1; ksStatusLbl.Text=""
-ksStatusLbl.TextColor3=Color3.fromRGB(255,70,70); ksStatusLbl.TextSize=11; ksStatusLbl.Font=Enum.Font.Gotham
-ksStatusLbl.TextXAlignment=Enum.TextXAlignment.Center; ksStatusLbl.ZIndex=4; ksStatusLbl.Parent=ksBody
+-- Status label
+local ksStatusLbl = Instance.new("TextLabel")
+ksStatusLbl.Size = UDim2.new(1,-4,0,18); ksStatusLbl.Position = UDim2.new(0,0,0,200)
+ksStatusLbl.BackgroundTransparency = 1; ksStatusLbl.Text = ""
+ksStatusLbl.TextColor3 = Color3.fromRGB(255,80,80); ksStatusLbl.TextSize = 11
+ksStatusLbl.Font = Enum.Font.Gotham; ksStatusLbl.TextXAlignment = Enum.TextXAlignment.Center
+ksStatusLbl.ZIndex = 7; ksStatusLbl.Parent = rightPanel
 
-local ksAuthLbl=Instance.new("Frame")
-ksAuthLbl.Size=UDim2.new(1,-24,0,38); ksAuthLbl.Position=UDim2.new(0,12,0,118)
-ksAuthLbl.BackgroundColor3=Color3.fromRGB(34,160,60); ksAuthLbl.BackgroundTransparency=1
-ksAuthLbl.ZIndex=4; ksAuthLbl.Parent=ksBody; ksAuthLbl.Visible=false
-Instance.new("UICorner",ksAuthLbl).CornerRadius=UDim.new(0,8)
-local ksAuthText=Instance.new("TextLabel")
-ksAuthText.Size=UDim2.new(1,0,1,0); ksAuthText.BackgroundTransparency=1
-ksAuthText.Text="Authenticated"; ksAuthText.TextColor3=Color3.new(1,1,1)
-ksAuthText.TextSize=14; ksAuthText.Font=Enum.Font.GothamBold; ksAuthText.ZIndex=5; ksAuthText.Parent=ksAuthLbl
+-- Loading bar (shown after correct key)
+local loadingBar = Instance.new("Frame")
+loadingBar.Size = UDim2.new(1,-4,0,42); loadingBar.Position = UDim2.new(0,0,0,152)
+loadingBar.BackgroundColor3 = Color3.fromRGB(20,5,5); loadingBar.BorderSizePixel = 0
+loadingBar.ZIndex = 7; loadingBar.Visible = false; loadingBar.Parent = rightPanel
+Instance.new("UICorner", loadingBar).CornerRadius = UDim.new(0, 8)
+local loadingFill = Instance.new("Frame")
+loadingFill.Size = UDim2.new(0,0,1,0); loadingFill.BackgroundColor3 = Color3.fromRGB(160,0,0)
+loadingFill.BorderSizePixel = 0; loadingFill.ZIndex = 8; loadingFill.Parent = loadingBar
+Instance.new("UICorner", loadingFill).CornerRadius = UDim.new(0, 8)
+local loadingLbl = Instance.new("TextLabel")
+loadingLbl.Size = UDim2.new(1,0,1,0); loadingLbl.BackgroundTransparency = 1
+loadingLbl.Text = "Loading..."; loadingLbl.TextColor3 = Color3.new(1,1,1)
+loadingLbl.TextSize = 14; loadingLbl.Font = Enum.Font.GothamBold
+loadingLbl.ZIndex = 9; loadingLbl.Parent = loadingBar
 
-local starActive = true
+-- Whitelisted note at bottom
+local ksWhitelistLbl = Instance.new("TextLabel")
+ksWhitelistLbl.Size = UDim2.new(1,-4,0,16); ksWhitelistLbl.Position = UDim2.new(0,0,0,222)
+ksWhitelistLbl.BackgroundTransparency = 1; ksWhitelistLbl.Text = "Whitelisted users are let in automatically."
+ksWhitelistLbl.TextColor3 = Color3.fromRGB(100,40,40); ksWhitelistLbl.TextSize = 10
+ksWhitelistLbl.Font = Enum.Font.Gotham; ksWhitelistLbl.TextXAlignment = Enum.TextXAlignment.Center
+ksWhitelistLbl.ZIndex = 7; ksWhitelistLbl.Parent = rightPanel
 
+-- Try key function
 local function doTryKey()
     local entered = ksKeyBox.Text:gsub("%s+", "")
-    if entered == PERM_KEY then
-        ksStatusLbl.Text=""; ksSubmitBtn.Visible=false; ksInputBg.Visible=false
-        local permLbl=Instance.new("TextLabel")
-        permLbl.Size=UDim2.new(1,-24,0,42); permLbl.Position=UDim2.new(0,12,0,116)
-        permLbl.BackgroundColor3=Color3.fromRGB(80,0,180); permLbl.BackgroundTransparency=0
-        permLbl.Text="Permanent Access"; permLbl.TextColor3=Color3.new(1,1,1); permLbl.TextSize=14
-        permLbl.Font=Enum.Font.GothamBold; permLbl.TextXAlignment=Enum.TextXAlignment.Center; permLbl.ZIndex=4; permLbl.Parent=ksBody
-        Instance.new("UICorner",permLbl).CornerRadius=UDim.new(0,8)
-        task.wait(1.6); starActive=false
-        local fo=TweenInfo.new(0.4,Enum.EasingStyle.Quint,Enum.EasingDirection.In)
-        TweenService:Create(ksOverlay,fo,{BackgroundTransparency=1}):Play()
-        TweenService:Create(ksCard,fo,{BackgroundTransparency=1}):Play()
-        task.wait(0.5); keyGui:Destroy(); _showMainGui(); return
+    local isPerm = (entered == PERM_KEY)
+    local isValid = isPerm or (entered == VALID_KEY)
+
+    if not isValid then
+        ksStatusLbl.Text = "✗  Invalid key"
+        TweenService:Create(ksInputBg, TweenInfo.new(0.08), { BackgroundColor3 = Color3.fromRGB(60,5,5) }):Play()
+        task.wait(0.25)
+        TweenService:Create(ksInputBg, TweenInfo.new(0.2), { BackgroundColor3 = Color3.fromRGB(20,3,3) }):Play()
+        return
     end
-    if entered == VALID_KEY then
-        if isKeyExpired() then
-            ksStatusLbl.Text="Key expired."; ksStatusLbl.TextColor3=Color3.fromRGB(255,60,60)
-            TweenService:Create(ksInputBg,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(60,10,10)}):Play()
-            task.wait(0.3); TweenService:Create(ksInputBg,TweenInfo.new(0.2),{BackgroundColor3=Color3.fromRGB(28,28,34)}):Play(); return
-        end
-        if not getStoredExpiry() or getStoredExpiry()==0 then setStoredExpiry(os.time()+KEY_DURATION) end
-        ksStatusLbl.Text=""; ksSubmitBtn.Visible=false; ksInputBg.Visible=false; ksAuthLbl.Visible=true
-        TweenService:Create(ksAuthLbl,TweenInfo.new(0.3),{BackgroundTransparency=0}):Play()
-        task.wait(1.2); starActive=false
-        local fo=TweenInfo.new(0.4,Enum.EasingStyle.Quint,Enum.EasingDirection.In)
-        TweenService:Create(ksOverlay,fo,{BackgroundTransparency=1}):Play()
-        TweenService:Create(ksCard,fo,{BackgroundTransparency=1}):Play()
-        task.wait(0.5); keyGui:Destroy(); _showMainGui()
-    else
-        ksStatusLbl.Text="Invalid key."
-        TweenService:Create(ksInputBg,TweenInfo.new(0.1),{BackgroundColor3=Color3.fromRGB(60,10,10)}):Play()
-        task.wait(0.3); TweenService:Create(ksInputBg,TweenInfo.new(0.2),{BackgroundColor3=Color3.fromRGB(28,28,34)}):Play()
+
+    if not isPerm and isKeyExpired() then
+        ksStatusLbl.Text = "✗  Key expired"; return
     end
+    if not isPerm and (not getStoredExpiry() or getStoredExpiry() == 0) then
+        setStoredExpiry(os.time() + KEY_DURATION)
+    end
+
+    -- Show Access Granted
+    ksStatusLbl.Text = ""
+    ksInputBg.Visible = false; ksSubmitBtn.Visible = false
+    ksWhitelistLbl.Visible = false; statusRow.Visible = false
+
+    accessBanner.Visible = true
+    TweenService:Create(accessBanner, TweenInfo.new(0.3), { BackgroundTransparency = 0 }):Play()
+    if isPerm then
+        accessBanner.BackgroundColor3 = Color3.fromRGB(120,0,0)
+        accessGrantedLbl.Text = "👑  Permanent Access"
+    end
+
+    -- Authenticated dot
+    local authDotRow = Instance.new("Frame")
+    authDotRow.Size = UDim2.new(1,-4,0,22); authDotRow.Position = UDim2.new(0,0,0,132)
+    authDotRow.BackgroundTransparency = 1; authDotRow.ZIndex = 7; authDotRow.Parent = rightPanel
+    local aDot = Instance.new("Frame")
+    aDot.Size = UDim2.new(0,10,0,10); aDot.Position = UDim2.new(0,0,0.5,-5)
+    aDot.BackgroundColor3 = Color3.fromRGB(80,220,100); aDot.BorderSizePixel=0; aDot.ZIndex=8; aDot.Parent=authDotRow
+    Instance.new("UICorner",aDot).CornerRadius=UDim.new(1,0)
+    local aLbl = Instance.new("TextLabel")
+    aLbl.Size = UDim2.new(1,-18,1,0); aLbl.Position = UDim2.new(0,16,0,0)
+    aLbl.BackgroundTransparency = 1; aLbl.Text = "Authenticated"
+    aLbl.TextColor3 = Color3.fromRGB(80,220,100); aLbl.TextSize = 13; aLbl.Font = Enum.Font.GothamSemibold
+    aLbl.TextXAlignment = Enum.TextXAlignment.Left; aLbl.ZIndex = 8; aLbl.Parent = authDotRow
+
+    -- Loading bar
+    task.wait(0.5)
+    loadingBar.Visible = true
+    TweenService:Create(loadingFill, TweenInfo.new(1.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+        { Size = UDim2.new(1, 0, 1, 0) }):Play()
+    task.wait(1.4)
+
+    -- Fade out and open main GUI
+    dripActive = false
+    local fo = TweenInfo.new(0.5, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+    TweenService:Create(ksOverlay, fo, { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(ksCard,    fo, { BackgroundTransparency = 1 }):Play()
+    TweenService:Create(ksStroke,  fo, { Transparency = 1 }):Play()
+    task.wait(0.55)
+    keyGui:Destroy()
+    _showMainGui()
 end
 
 ksSubmitBtn.MouseButton1Click:Connect(doTryKey)
-ksKeyBox.FocusLost:Connect(function(enterPressed) if enterPressed then doTryKey() end end)
+ksKeyBox.FocusLost:Connect(function(enter) if enter then doTryKey() end end)
 
-local STAR_COLORS={Color3.fromRGB(180,0,255),Color3.fromRGB(210,80,255),Color3.fromRGB(255,0,200),Color3.fromRGB(140,0,255),Color3.fromRGB(255,100,255)}
-local function spawnStar()
-    local star=Instance.new("TextLabel")
-    star.Size=UDim2.new(0,24,0,24); star.BackgroundTransparency=1; star.Text="*"
-    star.TextSize=math.random(14,28); star.Font=Enum.Font.GothamBold
-    star.TextColor3=STAR_COLORS[math.random(#STAR_COLORS)]; star.TextTransparency=0; star.ZIndex=1
-    star.Position=UDim2.new(math.random(0,100)/100,0,math.random(0,100)/100,0); star.Parent=keyGui
-    task.spawn(function()
-        while star.Parent and starActive do
-            star.TextColor3=STAR_COLORS[math.random(#STAR_COLORS)]
-            local baseX=star.Position.X.Scale; local baseY=star.Position.Y.Scale
-            local jx=math.random(-6,6); local jy=math.random(-6,6)
-            star.Position=UDim2.new(baseX,jx,baseY,jy)
-            if math.random(1,4)==1 then star.TextTransparency=0.7; task.wait(0.05); star.TextTransparency=0 end
-            TweenService:Create(star,TweenInfo.new(math.random(4,9),Enum.EasingStyle.Linear),{Position=UDim2.new(baseX,jx,baseY-0.15,jy)}):Play()
-            task.wait(math.random(8,20)/100)
-        end
-        if star.Parent then star:Destroy() end
-    end)
-    task.delay(math.random(5,12),function()
-        if star.Parent then TweenService:Create(star,TweenInfo.new(0.5),{TextTransparency=1}):Play(); task.wait(0.5); pcall(function() star:Destroy() end) end
-    end)
-end
+-- Animate card open
 task.spawn(function()
-    for _=1,20 do spawnStar(); task.wait(0.08) end
-    while starActive and keyGui.Parent do task.wait(0.4); spawnStar() end
-end)
-keyGui.AncestryChanged:Connect(function() if not keyGui.Parent then starActive=false end end)
-
-task.spawn(function()
-    TweenService:Create(ksCard,TweenInfo.new(0.38,Enum.EasingStyle.Back,Enum.EasingDirection.Out),{Size=UDim2.new(0,320,0,200)}):Play()
+    TweenService:Create(ksCard, TweenInfo.new(0.42, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        { Size = UDim2.new(0, 440, 0, 260) }):Play()
+    task.wait(0.6)
+    TweenService:Create(ksCheckLbl, TweenInfo.new(0.3), { TextTransparency = 0 }):Play()
+    task.wait(0.9)
+    statusDot.BackgroundColor3 = Color3.fromRGB(80, 220, 100)
+    ksCheckLbl.Text = "✓  Connected to Soul's Gui"
+    ksCheckLbl.TextColor3 = Color3.fromRGB(80, 220, 100)
     task.wait(0.5)
-    TweenService:Create(ksCheckLbl,TweenInfo.new(0.3),{TextTransparency=0}):Play()
-    task.wait(1.2)
-    ksCheckLbl.Text="Connected to Soul Gui"; ksCheckLbl.TextColor3=Color3.fromRGB(80,220,100)
-    TweenService:Create(ksWhitelistLbl,TweenInfo.new(0.3),{TextTransparency=0}):Play()
-    task.wait(0.4)
+    ksCheckLbl.Text = "✓  Whitelisted — Enter your key below"
     ksKeyBox:CaptureFocus()
 end)
 
-end) -- end pcall
-if not _ok then _showErr(_err) end
+keyGui.AncestryChanged:Connect(function()
+    if not keyGui.Parent then dripActive = false end
+end)
