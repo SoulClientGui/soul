@@ -1,6 +1,5 @@
 -- Soul V1 | Bloodshot Red | Onyx-style Layout
 -- Mutual tag detection via BillboardGui marker (replicates natively to all clients)
---loadstring(game:HttpGet("https://raw.githubusercontent.com/SoulClientGui/soul/refs/heads/main/SoulV1.lua"))()
 
 
 local Players        = game:GetService("Players")
