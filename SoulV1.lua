@@ -1,7 +1,6 @@
 -- Soul V1 | Bloodshot Red | Onyx-style Layout
 -- Mutual tag detection via BillboardGui marker (replicates natively to all clients)
 
-
 local Players        = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService   = game:GetService("TweenService")
